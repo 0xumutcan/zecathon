@@ -113,6 +113,7 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
         x = surface.shaftX(fallY - surface.earthTop);
         ch.lift = floorY - fallY;
         ch.alpha = 1; ch.scale = 1;
+        ch.hole = null; // out of the burrow's mouth and into the shaft
         ch.rot = Math.sin(now / 260) * 0.22;
       }
       const dx = x - ch.x;

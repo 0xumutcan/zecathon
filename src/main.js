@@ -10,6 +10,7 @@ import { createSpeech } from "./speech.js";
 import { createStory } from "./story.js";
 import { createFloor } from "./floor.js";
 import { createQuest } from "./quest.js";
+import { createTunnel } from "./tunnel.js";
 
 initStage();
 const lenis = new Lenis({ lerp: 0.1 });
@@ -29,6 +30,7 @@ const lenis = new Lenis({ lerp: 0.1 });
   const ch = createCharacter({ look, walk, jump });
   const rabbit = createRabbit(rabbitSheet, rabbitDive);
   const speech = createSpeech(document.getElementById("bubble"));
+  const tunnel = createTunnel();
   const story = createStory({
     section: document.getElementById("surface"),
     hero: document.getElementById("hero"),
@@ -65,6 +67,10 @@ const lenis = new Lenis({ lerp: 0.1 });
     const inFloor = floor1.progress > 0;
     if (inFloor) surface.camY = floor1.camY;
     surface.draw(now);
+    // the shielded layer: a stretch of plain soil under the hole, the golden tunnel, soil again above the room
+    tunnel.draw(now, surface.camY,
+      { top: surface.earthTop + stage.H * 0.3, bottom: room1.top() - surface.camY - stage.H * 0.12 },
+      { x: ch.x ?? stage.W / 2, y: stage.H * 0.58 - 110 });
     room1.draw(now, surface.camY);
 
     if (inFloor) floor1.post(now, dt);
@@ -90,7 +96,7 @@ const lenis = new Lenis({ lerp: 0.1 });
         return { surface: +story.progress.toFixed(3), floor1: +floor1.progress.toFixed(3), ch: { x: Math.round(ch.x), pose: ch.pose, lift: Math.round(ch.lift) }, rabbit: { x: Math.round(rabbit.x), state: rabbit.state } };
       },
       run(ms) { let t = performance.now(); for (let i = 0; i < ms / 16; i++) render((t += 16)); },
-      floor1,
+      floor1, ch,
     };
   }
 })();

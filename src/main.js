@@ -28,6 +28,13 @@ const FLOORS = [
       chest: "More treasure!", wear: "A matching tee. I'm getting the hang of this.", exit: "Here we go again!",
     },
   },
+  {
+    id: "floor3", quest: "shield", item: 2, outfit: ["2_tee", "3_jacket"],
+    lines: {
+      land: "Why is it wet down here?", board: "A board about... boats?", afterQuest: "The shielded ones just... weren't there.",
+      chest: "Treasure, by the water!", wear: "A jacket. I look like I know things now.", exit: "Not agai—",
+    },
+  },
 ];
 
 initStage();

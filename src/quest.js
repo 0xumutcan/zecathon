@@ -1,6 +1,7 @@
 // The quest board panel: a parchment that blocks the way until the floor's task is done.
 // Progress is remembered in this browser so a reload doesn't send anyone back up.
 import { checkAddress } from "./address.js";
+import { shieldQuest } from "./shield.js";
 
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(`zq:${k}`)); } catch { return null; } },
@@ -107,6 +108,8 @@ QUESTS.zec = {
   },
 };
 
+QUESTS.shield = shieldQuest;
+
 export function createQuest(id) {
   const def = QUESTS[id];
   const el = document.createElement("div");
@@ -115,7 +118,7 @@ export function createQuest(id) {
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-label", def.title);
   el.innerHTML = `
-    <div class="parchment">
+    <div class="parchment${def.wide ? " wide" : ""}">
       <p class="eyebrow">${def.eyebrow}</p>
       <h2>${def.title}</h2>
       <p class="intro">${def.intro}</p>

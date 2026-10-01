@@ -17,6 +17,14 @@ const ROOMS = {
     board: { x: 876, y: 976 },
     chestX: 2150,               // right of the coin stacks
   },
+  floor3: {
+    torches: [{ x: 380, y: 760 }, { x: 2370, y: 750 }],
+    lantern: { x: 1144, y: 900 },
+    board: { x: 874, y: 980 },
+    chestX: 2150,
+    // glowing crystals over the underground water: a slow cold pulse instead of a flicker
+    crystals: [{ x: 780, y: 530 }, { x: 200, y: 730 }, { x: 2070, y: 590 }, { x: 2050, y: 980 }, { x: 1570, y: 1080 }, { x: 1990, y: 1050 }],
+  },
 };
 
 export async function createRoom(name) {
@@ -54,6 +62,15 @@ export async function createRoom(name) {
         const g = c.createRadialGradient(cx, cy, 0, cx, cy, r);
         g.addColorStop(0, `rgba(255, 150, 60, ${0.22 * f})`);
         g.addColorStop(1, "rgba(255, 150, 60, 0)");
+        c.fillStyle = g;
+        c.fillRect(cx - r, cy - r, r * 2, r * 2);
+      }
+      for (const [i, p] of (spot.crystals ?? []).entries()) {
+        const f = 0.6 + 0.4 * Math.sin(t * 1.3 + i * 1.7);
+        const cx = tf.x + p.x * k, cy = tf.y + p.y * k, r = 120 * k;
+        const g = c.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `rgba(60, 230, 200, ${0.16 * f})`);
+        g.addColorStop(1, "rgba(60, 230, 200, 0)");
         c.fillStyle = g;
         c.fillRect(cx - r, cy - r, r * 2, r * 2);
       }

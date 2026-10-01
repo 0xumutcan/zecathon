@@ -84,7 +84,8 @@ export function createCharacter(sprites) {
         ctx.globalAlpha = ch.alpha;
         ctx.translate(Math.round(ch.x), Math.round(floorY - ch.lift));
         if (ch.rot) ctx.rotate(ch.rot);
-        ctx.scale(ch.scale * (flip ? -1 : 1), ch.scale);
+        const sq = ch.squash || 0; // landing squash: wider and shorter, pivoting on the feet
+        ctx.scale(ch.scale * (1 + sq) * (flip ? -1 : 1), ch.scale * (1 - sq));
         // frames keep the feet 4px above their bottom edge (tools/process-sprite.mjs)
         ctx.drawImage(sheet.img, r.sx, r.sy, r.w, r.h, -r.w / 2, -r.h + 4, r.w, r.h);
         ctx.restore();

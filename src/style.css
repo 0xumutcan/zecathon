@@ -17,6 +17,7 @@ canvas { transition: opacity .6s steps(6); }
 
 main { position: relative; }
 #surface { height: 500vh; }
+.chapter { height: 700vh; }
 
 /* ---- hero copy over the sky ---- */
 #hero {
@@ -75,6 +76,71 @@ main { position: relative; }
 }
 .floor h2 { margin: 0; font: 700 clamp(28px, 4vw, 52px)/1 "Pixelify Sans", monospace; color: var(--gold); }
 .floor .sub { opacity: .7; }
+
+/* ---- quest parchment ---- */
+.quest {
+  --wood: #3a2414; --paper-q: #ecdcb4; --ink-q: #2b1b10;
+  position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px;
+  background: rgba(8, 6, 6, .55);
+  opacity: 0; pointer-events: none; transition: opacity .25s steps(4);
+}
+.quest.show { opacity: 1; pointer-events: auto; }
+.parchment {
+  width: min(600px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  padding: calc(var(--px) * 10) calc(var(--px) * 11);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 250, 230, .55), transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(150, 110, 60, .18), transparent 55%),
+    var(--paper-q);
+  color: var(--ink-q);
+  /* thick stepped wooden frame */
+  box-shadow:
+    0 calc(var(--px) * -2) 0 0 var(--wood), 0 calc(var(--px) * 2) 0 0 var(--wood),
+    calc(var(--px) * -2) 0 0 0 var(--wood), calc(var(--px) * 2) 0 0 0 var(--wood),
+    0 calc(var(--px) * 6) 0 0 rgba(0, 0, 0, .4);
+  translate: 0 12px; transition: translate .25s steps(4);
+}
+.quest.show .parchment { translate: 0 0; }
+.parchment .eyebrow { color: #8a5a20; opacity: 1; }
+.parchment h2 { margin: 0 0 8px; font: 700 clamp(24px, 3vw, 32px)/1.1 "Pixelify Sans", monospace; }
+.parchment .intro { margin: 0 0 16px; }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 14px; }
+.steps li { counter-increment: step; position: relative; padding-left: 38px; }
+.steps li::before {
+  content: counter(step); position: absolute; left: 0; top: -1px; width: 26px; height: 26px;
+  display: grid; place-items: center; background: var(--wood); color: var(--gold);
+  font: 700 15px/1 "Pixelify Sans", monospace;
+}
+.steps b { display: block; margin-bottom: 4px; }
+.steps code { font: 600 14px/1 ui-monospace, monospace; background: rgba(58, 36, 20, .12); padding: 1px 5px; }
+.wallets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+.wallets a {
+  display: grid; gap: 2px; padding: 10px 12px; text-decoration: none;
+  background: var(--wood); color: var(--paper-q); box-shadow: 0 0 0 2px var(--wood);
+}
+.wallets a:hover, .wallets a:focus-visible { box-shadow: 0 0 0 2px var(--gold); outline: none; }
+.wallets span { font: 700 17px/1.1 "Pixelify Sans", monospace; color: var(--gold); }
+.wallets small { font-size: 12px; opacity: .8; }
+.check { display: flex; gap: 8px; margin-top: 6px; }
+.check input {
+  flex: 1; min-width: 0; padding: 10px 12px; font: 14px/1.2 ui-monospace, monospace;
+  background: #f8efd8; color: var(--ink-q); border: 0; box-shadow: inset 0 0 0 2px var(--wood);
+}
+.check input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--wood), 0 0 0 2px var(--gold); }
+.check button, .quest .skip { cursor: pointer; font: 700 16px/1 "Pixelify Sans", monospace; border: 0; }
+.check button { padding: 10px 16px; background: var(--gold); color: var(--ink-q); box-shadow: 0 4px 0 0 #a3740c; }
+.check button:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
+.result { min-height: 1.5em; margin: 8px 0 0; font-size: 14px; }
+.result.good { color: #2f6b2a; font-weight: 600; }
+.result.bad { color: #9a2a1a; }
+.parchment footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; padding-top: 12px; border-top: 2px dashed rgba(58, 36, 20, .35); font-size: 13px; }
+.reward { font-weight: 600; color: #8a5a20; }
+.quest .skip { background: none; color: var(--ink-q); opacity: .6; font-size: 13px; text-decoration: underline; }
+.quest .skip:hover { opacity: 1; }
+@media (max-width: 560px) {
+  .wallets { grid-template-columns: 1fr; }
+  .parchment footer { flex-direction: column; align-items: flex-start; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   #hint span { animation: none; }

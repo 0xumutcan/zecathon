@@ -3,22 +3,28 @@ import "./style.css";
 import { initStage, stage } from "./stage.js";
 import { loadSprite } from "./assets.js";
 import { createSurface } from "./surface.js";
+import { createRoom } from "./room.js";
 import { createCharacter } from "./character.js";
 import { createRabbit } from "./rabbit.js";
 import { createSpeech } from "./speech.js";
 import { createStory } from "./story.js";
+import { createFloor } from "./floor.js";
+import { createQuest } from "./quest.js";
 
 initStage();
 const lenis = new Lenis({ lerp: 0.1 });
 
 (async () => {
-  const [surface, look, walk, jump, rabbitSheet, rabbitDive] = await Promise.all([
+  const [surface, room1, look, walk, jump, rabbitSheet, rabbitDive, chest, items] = await Promise.all([
     createSurface(),
+    createRoom("floor1", 0),
     loadSprite("character", "0_base"),
     loadSprite("character", "walk"),
     loadSprite("character", "jump"),
     loadSprite("actors", "rabbit_b", "png"),
     loadSprite("actors", "rabbit_dive", "png"),
+    loadSprite("actors", "chest", "png"),
+    loadSprite("actors", "items", "png"),
   ]);
   const ch = createCharacter({ look, walk, jump });
   const rabbit = createRabbit(rabbitSheet, rabbitDive);
@@ -28,6 +34,16 @@ const lenis = new Lenis({ lerp: 0.1 });
     hero: document.getElementById("hero"),
     hint: document.getElementById("hint"),
     surface, ch, rabbit, speech,
+  });
+
+  // the next outfit downloads in the background while he is still on the surface
+  const outfit1 = { before: look, after: look };
+  loadSprite("character", "1_cap").then((s) => { outfit1.after = s; });
+  const floor1 = createFloor({
+    section: document.getElementById("floor1"),
+    room: room1, quest: createQuest("wallet"), chest, items, itemIndex: 0,
+    ch, speech, outfit: outfit1,
+    startCamY: () => stage.H * 1.2, // where the surface chapter leaves the camera
   });
   document.body.classList.add("ready");
 
@@ -42,13 +58,23 @@ const lenis = new Lenis({ lerp: 0.1 });
     lenis.raf(now);
 
     story.pre();
+    floor1.pre();
+    // a quest holds the page: no scrolling past the board until it's done (going back up is fine)
+    if (floor1.lockY !== null && lenis.scroll > floor1.lockY) lenis.scrollTo(floor1.lockY, { immediate: true });
+
+    const inFloor = floor1.progress > 0;
+    if (inFloor) surface.camY = floor1.camY;
     surface.draw(now);
-    story.post(now, dt);
-    rabbit.draw(now, surface.floorY);
+    room1.draw(now, surface.camY);
+
+    if (inFloor) floor1.post(now, dt);
+    else story.post(now, dt);
+    if (!inFloor) rabbit.draw(now, surface.floorY);
+    else floor1.drawProps();
 
     stage.pctx.clearRect(0, 0, stage.W, stage.H);
-    surface.drawDust(dt, now);
-    ch.draw(now, dt, surface.floorY);
+    if (!inFloor) surface.drawDust(dt, now);
+    ch.draw(now, dt, inFloor ? room1.floorY : surface.floorY);
     speech.update(now, ch.head, ch.attentive(now));
   }
   requestAnimationFrame(frame);
@@ -56,14 +82,15 @@ const lenis = new Lenis({ lerp: 0.1 });
   if (import.meta.env.DEV) {
     // test hook: jump to a story position and render frames without relying on rAF (hidden tabs throttle it)
     window.__dev = {
-      at(progress, frames = 20) {
-        const s = document.getElementById("surface");
-        lenis.scrollTo(s.offsetTop + progress * (s.offsetHeight - innerHeight), { immediate: true });
+      at(progress, frames = 20, id = "surface") {
+        const s = document.getElementById(id);
+        lenis.scrollTo(s.offsetTop + progress * (s.offsetHeight - innerHeight), { immediate: true, force: true });
         let t = performance.now();
         for (let i = 0; i < frames; i++) render((t += 16));
-        return { p: +story.progress.toFixed(3), ch: { x: Math.round(ch.x), pose: ch.pose, lift: Math.round(ch.lift) }, rabbit: { x: Math.round(rabbit.x), state: rabbit.state } };
+        return { surface: +story.progress.toFixed(3), floor1: +floor1.progress.toFixed(3), ch: { x: Math.round(ch.x), pose: ch.pose, lift: Math.round(ch.lift) }, rabbit: { x: Math.round(rabbit.x), state: rabbit.state } };
       },
       run(ms) { let t = performance.now(); for (let i = 0; i < ms / 16; i++) render((t += 16)); },
+      floor1,
     };
   }
 })();

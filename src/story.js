@@ -14,7 +14,8 @@ const RABBIT_DIVE = [0.42, 0.5];
 const WALK = [FREE_UNTIL + 0.03, 0.5];
 const STARE = [0.5, 0.57];
 const JUMP = [0.57, 0.78];
-const DESCENT = [0.78, 1];
+const IRIS = [0.78, 0.87];   // a golden portal closes onto the burrow, the tunnel takes over the screen
+const TUNNEL = 0.87;         // from here he tumbles through the tunnel
 // beats inside the jump clip (art/character/jump/jump.mp4, 24fps): hesitate, crouch, leap up,
 // flip head-down at the top (~78), dive down out of frame
 const CLIP_LEAP = 48, CLIP_DIVE = 86;
@@ -27,14 +28,19 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
 
   const story = {
     get progress() { return p; },
+    // the tunnel overlay for this frame: null, or { window } where window is the round hole showing the park
+    portal: null,
 
-    // before the background is drawn: scroll position and camera
+    // before the background is drawn: scroll position
     pre() {
       prevP = p;
       const r = section.getBoundingClientRect();
       p = clamp01(-r.top / (r.height - innerHeight));
-      surface.camY = ease(seg(p, ...DESCENT)) * stage.H * 1.2;
       hero.style.opacity = String(1 - seg(p, 0, 0.06));
+      const iris = seg(p, ...IRIS);
+      story.portal = iris <= 0 ? null : {
+        window: { x: surface.hole.x, y: surface.hole.y, r: Math.hypot(stage.W, stage.H) * (1 - ease(iris)) },
+      };
     },
 
     // after the background is drawn (floor and hole positions are current)
@@ -60,7 +66,7 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
       speech.autoTalk = false;
       if (crossed(WALK[0])) speech.say("Hey! Wait up!", now, 1200);
       if (crossed(STARE[0] + 0.02)) speech.say("...down there?", now, 1600);
-      if (crossed(DESCENT[0] + 0.04)) speech.say("Aaaaaah!", now, 1400);
+      if (crossed(TUNNEL + 0.01)) speech.say("Aaaaaah!", now, 1400);
 
       // --- rabbit: hops to just short of the hole, then leaps, tips over and dives head-first in
       const takeoffX = hole.x - 46;
@@ -89,9 +95,9 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
       const walkT = ease(seg(p, ...WALK));
       const approach = ease(seg(p, ...STARE)); // after the rabbit is gone he creeps up to the edge
       const jump = seg(p, ...JUMP);
-      // he reappears once the camera is deep enough that his spot on screen is inside the shaft
+      // once the portal has closed he reappears in the tunnel, tumbling in the middle of the screen
       const fallY = stage.H * 0.58;
-      const fall = p > DESCENT[0] && fallY > surface.earthTop + 30 ? 1 : 0;
+      const fall = p >= TUNNEL ? 1 : 0;
       // he hangs back while the rabbit dives (so it isn't hidden behind him), then creeps to the edge
       let x = lerp(lerp(start.chX, hole.x - 140, walkT), hole.x - 70, approach);
       ch.lift = 0; ch.scale = 1; ch.alpha = 1; ch.rot = 0; ch.hole = null;
@@ -107,13 +113,14 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
         ch.scale = 1 - 0.25 * depth;
         if (depth > 0) ch.hole = { depth, mask: surface.holeMask(false) };
       }
-      if (jump >= 1) ch.alpha = 0; // gone down the hole until the camera catches up with him
+      if (jump >= 1) ch.alpha = 0; // gone down the hole while the portal closes
       if (fall > 0) {
-        // tumbling down the shaft, staring back up at the light
-        x = surface.shaftX(fallY - surface.earthTop);
+        // tumbling through the tunnel, staring back up at where he came from
+        x = stage.W / 2;
         ch.lift = floorY - fallY;
-        ch.alpha = 1; ch.scale = 1;
-        ch.hole = null; // out of the burrow's mouth and into the shaft
+        ch.alpha = seg(p, TUNNEL, TUNNEL + 0.03);
+        ch.scale = 1;
+        ch.hole = null;
         ch.rot = Math.sin(now / 260) * 0.22;
       }
       const dx = x - ch.x;

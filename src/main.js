@@ -18,7 +18,7 @@ const lenis = new Lenis({ lerp: 0.1 });
 (async () => {
   const [surface, room1, look, walk, jump, rabbitSheet, rabbitDive, chest, items] = await Promise.all([
     createSurface(),
-    createRoom("floor1", 0),
+    createRoom("floor1"),
     loadSprite("character", "0_base"),
     loadSprite("character", "walk"),
     loadSprite("character", "jump"),
@@ -45,7 +45,6 @@ const lenis = new Lenis({ lerp: 0.1 });
     section: document.getElementById("floor1"),
     room: room1, quest: createQuest("wallet"), chest, items, itemIndex: 0,
     ch, speech, outfit: outfit1,
-    startCamY: () => stage.H * 1.2, // where the surface chapter leaves the camera
   });
   document.body.classList.add("ready");
 
@@ -65,18 +64,17 @@ const lenis = new Lenis({ lerp: 0.1 });
     if (floor1.lockY !== null && lenis.scroll > floor1.lockY) lenis.scrollTo(floor1.lockY, { immediate: true });
 
     const inFloor = floor1.progress > 0;
-    if (inFloor) surface.camY = floor1.camY;
-    surface.draw(now);
-    // the shielded layer: a stretch of plain soil under the hole, the golden tunnel, soil again above the room
-    tunnel.draw(now, surface.camY,
-      { top: surface.earthTop + stage.H * 0.3, bottom: room1.top() - surface.camY - stage.H * 0.12 },
-      { x: ch.x ?? stage.W / 2, y: stage.H * 0.58 - 110 });
-    room1.draw(now, surface.camY);
+    if (inFloor) room1.draw(now);
+    else surface.draw(now);
 
     if (inFloor) floor1.post(now, dt);
     else story.post(now, dt);
     if (!inFloor) rabbit.draw(now, surface.floorY);
     else floor1.drawProps();
+
+    // the shielded layer between scenes: a golden tunnel, entered and left through a round portal
+    const portal = inFloor ? floor1.portal : story.portal;
+    if (portal) tunnel.draw(now, lenis.scroll, { x: stage.W / 2, y: stage.H * 0.58 - 110 }, portal.window);
 
     stage.pctx.clearRect(0, 0, stage.W, stage.H);
     if (!inFloor) surface.drawDust(dt, now);

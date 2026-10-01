@@ -1,10 +1,7 @@
-// A dungeon room stacked below the surface in one tall world. World y (art units) equals screen y when the
-// camera is at 0: the surface image ends at the bottom of the first screen, then comes EARTH of soil
-// (with the shaft), then each room, one under the other.
+// A dungeon room: a painted background that fills the screen (bottom anchored, like the surface),
+// with flickering torchlight and the points the story needs (quest board, chest spot).
 import { loadImg, loadJSON } from "./assets.js";
 import { stage, devPerArt } from "./stage.js";
-
-export const EARTH = () => stage.H * 1.4; // soil between the surface and the first room
 
 // hand-placed points on room images (2752x1536 source px)
 const ROOMS = {
@@ -16,38 +13,31 @@ const ROOMS = {
   },
 };
 
-export async function createRoom(name, index) {
+export async function createRoom(name) {
   const [meta, img] = await Promise.all([loadJSON(`env/${name}.json`), loadImg(`env/${name}.webp`)]);
   const spot = ROOMS[name];
   let tf = { x: 0, y: 0, k: 1 };
 
   const room = {
     name, spot,
-    // art-unit height of a room/surface image at the current cover scale
-    height() { return (meta.h * Math.max(stage.bg.width / meta.w, stage.bg.height / meta.h)) / devPerArt(); },
-    // world y of this room's top edge
-    top() { return stage.H + EARTH() + index * (room.height() + EARTH()); },
-    // camera position at which the room exactly fills the screen
-    restCamY() { return room.top() + room.height() - stage.H; },
-
-    floorY: 0, board: { x: 0, y: 0 }, chestX: 0, ceiling: { x: 0, y: 0 },
+    floorY: 0, board: { x: 0, y: 0 }, chestX: 0,
 
     toArt(x, y) {
       const d = devPerArt();
       return { x: (tf.x + x * tf.k) / d, y: (tf.y + y * tf.k) / d };
     },
 
-    draw(now, camY) {
+    draw(now) {
       const { bctx: c, bg } = stage, d = devPerArt();
+      // cover the screen, keep the floor anchored and crop the ceiling first
       const k = Math.max(bg.width / meta.w, bg.height / meta.h);
       const w = meta.w * k, h = meta.h * k;
-      tf = { x: (bg.width - w) / 2, y: (room.top() - camY) * d, k };
+      tf = { x: (bg.width - w) / 2, y: bg.height - h, k };
       room.floorY = Math.round((tf.y + meta.groundY * k) / d);
       room.board = room.toArt(spot.board.x, spot.board.y);
       room.chestX = room.toArt(spot.chestX, 0).x;
-      room.ceiling = room.toArt(meta.w / 2, 0);
-      if (tf.y > bg.height || tf.y + h < 0) return; // off screen
 
+      c.clearRect(0, 0, bg.width, bg.height);
       c.drawImage(img, tf.x, tf.y, w, h);
       // torchlight: two layered noises so the flicker never looks like a loop
       const t = now / 1000;

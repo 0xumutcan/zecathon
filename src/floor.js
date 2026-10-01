@@ -9,8 +9,8 @@ const seg = (p, a, b) => clamp01((p - a) / (b - a));
 const ease = (t) => t * t * (3 - 2 * t);
 const lerp = (a, b, t) => a + (b - a) * t;
 
-const DESCEND = [0, 0.1];   // camera sinks from the shaft into the room
-const DROP = [0.1, 0.14];   // he falls the last bit onto the floor
+const PORTAL = [0.01, 0.09]; // a golden portal opens around him and the room appears through it
+const DROP = [0.08, 0.14];   // he falls the last bit onto the floor
 const SQUASH = [0.14, 0.18];
 const TO_BOARD = [0.18, 0.32];
 const LOCK = 0.34;          // the quest panel holds the scroll here
@@ -18,21 +18,24 @@ const TO_CHEST = [0.4, 0.55];
 const CHEST = [0.57, 0.8];
 const WEAR = 0.78;          // the item lands on him
 
-export function createFloor({ section, room, quest, chest, items, itemIndex, ch, speech, outfit, startCamY }) {
+export function createFloor({ section, room, quest, chest, items, itemIndex, ch, speech, outfit }) {
   let q = 0, prevQ = 0;
   const crossed = (at) => prevQ < at && q >= at;
   const sparks = [];
 
   const floor = {
     get progress() { return q; },
-    camY: 0,
-    lockY: null, // absolute scroll position the page may not pass, or null
+    lockY: null,  // absolute scroll position the page may not pass, or null
+    portal: null, // tunnel overlay for this frame (see tunnel.js), null once the room is fully open
 
     pre() {
       prevQ = q;
       const r = section.getBoundingClientRect();
       q = clamp01(-r.top / (r.height - innerHeight));
-      floor.camY = lerp(startCamY(), room.restCamY(), ease(seg(q, ...DESCEND)));
+      const open = seg(q, ...PORTAL);
+      floor.portal = open >= 1 ? null : {
+        window: { x: stage.W / 2, y: stage.H * 0.58 - 110, r: Math.hypot(stage.W, stage.H) * ease(open) },
+      };
       const lockAt = section.offsetTop + LOCK * (section.offsetHeight - innerHeight);
       floor.lockY = quest.done ? null : lockAt;
       if (q >= LOCK - 0.005 && !quest.done) quest.show();
@@ -45,7 +48,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
       speech.autoTalk = false; // on a floor only the story speaks
       ch.hole = null; ch.alpha = 1; ch.scale = 1; ch.rot = 0; ch.squash = 0;
 
-      // --- fall in through the ceiling and land
+      // --- drop out of the tunnel into the room and land
       const fallY = H * 0.58;
       let feetY = floorY;
       if (q < DROP[1]) {

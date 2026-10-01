@@ -1,6 +1,6 @@
 // The shielded layer between the surface and the dungeon: a golden plexus tunnel he falls through.
-// Rings of nodes rush outward from the center as the camera sinks, so scrolling drives the flight
-// (and scrolling back flies it in reverse). Drawn on the bg canvas, only inside the band of earth.
+// Rings of nodes rush outward from the center as you scroll, so scrolling drives the flight
+// (and scrolling back flies it in reverse). Scenes are entered and left through a round portal window.
 import { stage, devPerArt } from "./stage.js";
 
 const RINGS = 36;     // rings in the tunnel loop
@@ -25,28 +25,32 @@ export function createTunnel() {
 
   return {
     /**
-     * @param depth   how far along the tunnel we are (art units of camera travel)
-     * @param band    { top, bottom } screen rows (art units) where the earth is visible
+     * Full-screen tunnel, optionally with a round window cut out of it through which the scene underneath
+     * shows: the window shrinks onto the burrow when he dives in, and grows around him when he drops out.
+     * @param depth   how far along the tunnel we are (scroll distance)
      * @param center  { x, y } art point the tunnel converges on (him)
+     * @param window  null, or { x, y, r } in art units
      */
-    draw(now, depth, band, center) {
+    draw(now, depth, center, window) {
       const { bctx: c, bg } = stage, d = devPerArt();
-      const top = Math.max(0, band.top * d), bottom = Math.min(bg.height, band.bottom * d);
-      if (bottom - top < 2) return;
+      if (window && window.r * d > Math.hypot(bg.width, bg.height) * 1.2) return; // window covers the screen
       const cx = center.x * d, cy = center.y * d;
       const R = Math.max(bg.width, bg.height) * 0.22;
       const z = depth / 45 + now / 9000; // scroll drives it; a slow drift keeps it alive when you stop
 
       c.save();
-      c.beginPath();
-      c.rect(0, top, bg.width, bottom - top);
-      c.clip();
+      if (window) {
+        c.beginPath();
+        c.rect(0, 0, bg.width, bg.height);
+        c.arc(window.x * d, window.y * d, window.r * d, 0, Math.PI * 2);
+        c.clip("evenodd");
+      }
 
       const g = c.createRadialGradient(cx, cy, 0, cx, cy, Math.max(bg.width, bg.height) * 0.7);
       g.addColorStop(0, "#1c1309");
       g.addColorStop(1, "#060403");
       c.fillStyle = g;
-      c.fillRect(0, top, bg.width, bottom - top);
+      c.fillRect(0, 0, bg.width, bg.height);
 
       c.globalCompositeOperation = "lighter";
       // the warm core the rings pour out of
@@ -113,17 +117,29 @@ export function createTunnel() {
         });
       }
 
-      // soften the band's edges into the soil above and the room below
-      c.globalCompositeOperation = "source-over";
-      const edge = stage.H * 0.18 * d;
-      for (const [y0, y1] of [[top, top + edge], [bottom, bottom - edge]]) {
-        const e = c.createLinearGradient(0, y0, 0, y1);
-        e.addColorStop(0, "rgba(27, 22, 20, 1)");
-        e.addColorStop(1, "rgba(27, 22, 20, 0)");
-        c.fillStyle = e;
-        c.fillRect(0, Math.min(y0, y1), bg.width, Math.abs(y1 - y0));
-      }
       c.restore();
+
+      // the window's rim: a glowing golden portal ring, so the cut reads as magic rather than a mask
+      if (window && window.r > 0.5) {
+        const wx = window.x * d, wy = window.y * d, wr = window.r * d;
+        c.save();
+        c.globalCompositeOperation = "lighter";
+        const rim = c.createRadialGradient(wx, wy, Math.max(0, wr - 28 * stage.DPR), wx, wy, wr + 28 * stage.DPR);
+        rim.addColorStop(0, "rgba(255, 190, 70, 0)");
+        rim.addColorStop(0.5, "rgba(255, 200, 90, 0.55)");
+        rim.addColorStop(1, "rgba(255, 190, 70, 0)");
+        c.fillStyle = rim;
+        c.beginPath();
+        c.arc(wx, wy, wr + 28 * stage.DPR, 0, Math.PI * 2);
+        c.fill();
+        c.globalCompositeOperation = "source-over";
+        c.strokeStyle = "rgba(255, 228, 160, 0.95)";
+        c.lineWidth = 2 * stage.DPR;
+        c.beginPath();
+        c.arc(wx, wy, wr, 0, Math.PI * 2);
+        c.stroke();
+        c.restore();
+      }
     },
   };
 }

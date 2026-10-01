@@ -56,18 +56,26 @@ const lenis = new Lenis({ lerp: 0.1 });
     surface, ch, rabbit, speech,
   });
 
-  // outfits download one after another in the background while he is still up top;
-  // until one arrives, the floor shows the last outfit that did
-  const sheets = { "0_base": look };
+  // outfits (a look sheet and a walk sheet each) download one after another in the background while he is
+  // still up top; until one arrives, the floor shows the last outfit that did
+  const sheets = { "0_base": look, "walk_0_base": walk };
   (async () => {
     for (const f of FLOORS) {
       const name = f.outfit[1];
       try { sheets[name] = await loadSprite("character", name); } catch {}
+      try { sheets[`walk_${name}`] = await loadSprite("character", `walk_${name}`); } catch {}
     }
   })();
+  // newest outfit that has arrived, going backwards from the one asked for
+  const ORDER = ["0_base", ...FLOORS.map((f) => f.outfit[1])];
+  const latest = (name, prefix = "") => {
+    for (let i = ORDER.indexOf(name); i >= 0; i--) if (sheets[prefix + ORDER[i]]) return sheets[prefix + ORDER[i]];
+  };
   const wardrobe = ([before, after]) => ({
-    get before() { return sheets[before] ?? look; },
-    get after() { return sheets[after] ?? sheets[before] ?? look; },
+    get before() { return latest(before); },
+    get after() { return latest(after); },
+    get walkBefore() { return latest(before, "walk_"); },
+    get walkAfter() { return latest(after, "walk_"); },
   });
 
   const floorObjs = FLOORS.map((f, i) => {

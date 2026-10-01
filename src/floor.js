@@ -23,7 +23,7 @@ const BODY = 110;           // art px from his feet to the middle of his body
 
 /**
  * @param lines   what he says: { land, board, afterQuest, chest, wear, exit }
- * @param outfit  { before, after } look sheets; `after` may be swapped in once it has downloaded
+ * @param outfit  { before, after, walkBefore, walkAfter } sheets; later ones may arrive while you play
  */
 export function createFloor({ section, room, quest, chest, items, itemIndex, ch, speech, outfit, lines }) {
   let q = 0, prevQ = 0;
@@ -95,7 +95,9 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
         : null;
 
       // --- the reward: wear it once it lands on him (and take it off again when scrolling back)
-      ch.sprites.look = q >= WEAR ? outfit.after : outfit.before;
+      const worn = q >= WEAR;
+      ch.sprites.look = worn ? outfit.after : outfit.before;
+      ch.sprites.walk = worn ? outfit.walkAfter : outfit.walkBefore;
       if (crossed(WEAR)) burst(ch.x, ch.head.top + 10);
 
       if (crossed(SQUASH[0] + 0.01)) speech.say(lines.land, now, 900);

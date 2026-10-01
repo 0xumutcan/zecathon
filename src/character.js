@@ -16,7 +16,8 @@ const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
 export function createCharacter(sprites) {
   const ch = {
-    sprites,              // { look, walk, jump } sheets; look can be swapped for outfit variants
+    sprites,              // { look, walk, jump } sheets; look and walk get swapped for outfit variants
+    base: { ...sprites }, // the plain grey outfit
     mode: "free",
     x: null, facing: 1,
     lift: 0, scale: 1, alpha: 1, rot: 0, // set by the story for jumps and the fall
@@ -52,7 +53,8 @@ export function createCharacter(sprites) {
         i = Math.min(sheet.meta.count - 1, Math.max(0, Math.round(ch.jumpFrame)));
       } else if (ch.pose === "walk") {
         sheet = walk;
-        i = Math.floor(ch.walkDist * WALK_FRAMES_PER_PX) % walk.meta.count;
+        // each walk sheet steps at its own cadence (tools/measure-walk.mjs); advancing by distance keeps feet planted
+        i = Math.floor(ch.walkDist * (walk.meta.framesPerPx ?? WALK_FRAMES_PER_PX)) % walk.meta.count;
         flip = ch.facing < 0;
       } else {
         sheet = look;

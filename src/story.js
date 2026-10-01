@@ -46,6 +46,9 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
     // after the background is drawn (floor and hole positions are current)
     post(now, dt) {
       const floorY = surface.floorY, hole = surface.hole;
+      // up here he is always the plain grey guy, even when you scroll back up from a floor
+      ch.sprites.look = ch.base.look;
+      ch.sprites.walk = ch.base.walk;
 
       if (p <= FREE_UNTIL) {
         if (start) release();

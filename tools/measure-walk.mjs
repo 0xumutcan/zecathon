@@ -1,6 +1,7 @@
-// Measures the walk sheet's step period and foot spread to derive a slide-free walking speed.
+// Measures the walk sheet's step period and foot spread to derive a slide-free walking speed,
+// and stores frames-per-art-pixel in the sheet's json so the page can advance the cycle by distance walked.
 // usage: node measure-walk.mjs [dir] [name]
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 
@@ -32,3 +33,5 @@ const footLen = Math.min(...spread); // feet together ~ one shoe length
 const stride = Math.max(...spread) - footLen; // how far a planted foot travels back during one step
 const speed = stride / (stepFrames / meta.fps);
 console.log({ spreadMin: footLen, spreadMax: Math.max(...spread), peaks, stepFrames: +stepFrames.toFixed(1), stride, speedPxPerSec: +speed.toFixed(1) });
+meta.framesPerPx = +(stepFrames / stride).toFixed(4);
+writeFileSync(join(dir, `${name}.json`), JSON.stringify(meta));

@@ -18,6 +18,7 @@ canvas { transition: opacity .6s steps(6); }
 main { position: relative; }
 #surface { height: 500vh; }
 .chapter { height: 700vh; }
+.chapter.long { height: 1100vh; }
 
 /* ---- hero copy over the sky ---- */
 #hero {

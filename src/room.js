@@ -21,7 +21,7 @@ const ROOMS = {
     torches: [{ x: 380, y: 760 }, { x: 2370, y: 750 }],
     lantern: { x: 1144, y: 900 },
     board: { x: 874, y: 980 },
-    chestX: 2150,
+    chestX: 1450,               // in front of the middle pillar; the ferry is moored to its right
     // glowing crystals over the underground water: a slow cold pulse instead of a flicker
     crystals: [{ x: 780, y: 530 }, { x: 200, y: 730 }, { x: 2070, y: 590 }, { x: 2050, y: 980 }, { x: 1570, y: 1080 }, { x: 1990, y: 1050 }],
   },

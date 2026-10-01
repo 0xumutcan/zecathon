@@ -2,11 +2,7 @@
 // Progress is remembered in this browser so a reload doesn't send anyone back up.
 import { checkAddress } from "./address.js";
 import { shieldQuest } from "./shield.js";
-
-const store = {
-  get(k) { try { return JSON.parse(localStorage.getItem(`zq:${k}`)); } catch { return null; } },
-  set(k, v) { try { localStorage.setItem(`zq:${k}`, JSON.stringify(v)); } catch {} },
-};
+import { store } from "./store.js";
 
 const QUESTS = {
   wallet: {
@@ -79,7 +75,7 @@ QUESTS.zec = {
         </li>
         <li>
           <b>Is it in your wallet?</b>
-          <p class="note">We can't see your balance. That's the whole point of shielded. So we'll take your word for it; Floor IV will prove it.</p>
+          <p class="note">We can't see your balance. That's the whole point of shielded. So we'll take your word for it. A little further down, you'll get to prove it.</p>
           <div class="confirm">
             <button type="button" data-c="yes" disabled>It arrived</button>
             <button type="button" data-c="later" class="ghost" disabled>Not yet, I'll get it later</button>

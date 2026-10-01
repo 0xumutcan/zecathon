@@ -1,0 +1,83 @@
+/* ---- the ferryman's conversation: an RPG dialogue box along the bottom of the screen ---- */
+.ferry-talk {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; justify-items: center;
+  padding: 0 16px 16px; max-height: 100vh; overflow: auto;
+  opacity: 0; pointer-events: none; transition: opacity .25s steps(4);
+}
+.ferry-talk.show { opacity: 1; pointer-events: auto; }
+.ferry-talk .box {
+  --edge: #f4b728; --bg: #15120f;
+  position: relative; width: min(880px, 100%);
+  display: grid; grid-template-columns: auto 1fr; gap: 18px;
+  padding: calc(var(--px) * 8) calc(var(--px) * 9) calc(var(--px) * 7);
+  background: var(--bg); color: #f2ead8;
+  box-shadow:
+    0 calc(var(--px) * -2) 0 0 var(--edge), 0 calc(var(--px) * 2) 0 0 var(--edge),
+    calc(var(--px) * -2) 0 0 0 var(--edge), calc(var(--px) * 2) 0 0 0 var(--edge),
+    0 calc(var(--px) * 6) 0 0 rgba(0, 0, 0, .45);
+  translate: 0 16px; transition: translate .25s steps(4);
+}
+.ferry-talk.show .box { translate: 0 0; }
+.ferry-talk .who { display: grid; justify-items: center; align-content: start; gap: 6px; }
+.ferry-talk .face {
+  width: 108px; height: 108px; background: #233038 url(/actors/ferryman.png) no-repeat;
+  background-size: 864px 327px; background-position: -54px -12px; image-rendering: pixelated;
+  box-shadow: 0 0 0 var(--px) var(--edge);
+}
+.ferry-talk .who span { font: 600 13px/1 "Pixelify Sans", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--edge); }
+.ferry-talk .talk { min-width: 0; display: grid; gap: 12px; align-content: start; }
+.ferry-talk .line { margin: 0; min-height: 3em; font: 500 19px/1.4 "Pixelify Sans", monospace; }
+.ferry-talk .answers { display: flex; flex-wrap: wrap; gap: 8px; }
+.ferry-talk .answers button {
+  cursor: pointer; padding: 10px 14px; border: 0; font: 700 15px/1 "Pixelify Sans", monospace;
+  background: var(--edge); color: #2b1b10; box-shadow: 0 4px 0 0 #a3740c;
+}
+.ferry-talk .answers button::before { content: "▸ "; }
+.ferry-talk .answers button:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
+.ferry-talk .answers button.ghost { background: transparent; color: #f2ead8; box-shadow: inset 0 0 0 2px rgba(242, 234, 216, .4); }
+.ferry-talk .skip {
+  position: absolute; right: 14px; top: 10px; cursor: pointer; border: 0; background: none;
+  color: #f2ead8; opacity: .45; font: 12px/1 Inter, sans-serif; text-decoration: underline;
+}
+.ferry-talk .skip:hover { opacity: .9; }
+
+/* the payment card */
+.ferry-talk .card {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: center;
+  padding: 12px; background: #0d1214; box-shadow: inset 0 0 0 2px rgba(95, 220, 174, .25);
+}
+.ferry-talk .card[hidden] { display: none; }
+.ferry-talk .card > p, .ferry-talk .card > form { grid-column: 1 / -1; margin: 0; }
+.ferry-talk .qr { grid-row: span 2; width: 152px; padding: 6px; background: #fff; line-height: 0; }
+.ferry-talk .qr svg { width: 100%; height: auto; }
+.ferry-talk .card dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 14px; min-width: 0; }
+.ferry-talk .card dt { color: #8fa39d; }
+.ferry-talk .card dd { margin: 0; display: flex; gap: 8px; align-items: center; min-width: 0; }
+.ferry-talk .card code { font: 12.5px/1.35 ui-monospace, monospace; color: #eef3f0; overflow-wrap: anywhere; min-width: 0; }
+.ferry-talk .card .copy {
+  flex: none; cursor: pointer; padding: 4px 8px; border: 0; font: 600 12px/1 "Pixelify Sans", monospace;
+  background: #2a3a3a; color: #cfe; box-shadow: inset 0 0 0 1px rgba(95, 220, 174, .4);
+}
+.ferry-talk .card .how { grid-column: 2; margin: 0; font-size: 13px; color: #b9c6c1; }
+.ferry-talk .wait, .ferry-talk .offline { color: #b9c6c1; font-size: 14px; }
+.ferry-talk .wait::before { content: "◌ "; display: inline-block; animation: spin 1s steps(4) infinite; }
+@keyframes spin { to { rotate: 1turn; } }
+.ferry-talk .check { display: flex; gap: 8px; }
+.ferry-talk .check input {
+  flex: 1; min-width: 0; padding: 10px 12px; font: 14px/1.2 ui-monospace, monospace; border: 0;
+  background: #1d2426; color: #eef3f0; box-shadow: inset 0 0 0 2px rgba(95, 220, 174, .35);
+}
+.ferry-talk .check button { cursor: pointer; padding: 10px 16px; border: 0; font: 700 16px/1 "Pixelify Sans", monospace; background: var(--edge); color: #2b1b10; }
+.ferry-talk .result { margin: 6px 0 0; font-size: 14px; }
+.ferry-talk .result.good { color: #5fdcae; }
+.ferry-talk .result.bad { color: #ff8a78; }
+
+@media (max-width: 640px) {
+  .ferry-talk .box { grid-template-columns: 1fr; gap: 10px; }
+  .ferry-talk .who { grid-auto-flow: column; justify-content: start; align-items: center; }
+  .ferry-talk .face { width: 54px; height: 54px; background-size: 432px 163.5px; background-position: -27px -6px; }
+  .ferry-talk .line { font-size: 17px; }
+  .ferry-talk .card { grid-template-columns: 1fr; }
+  .ferry-talk .qr { grid-row: auto; justify-self: center; }
+  .ferry-talk .card .how { grid-column: 1; }
+}

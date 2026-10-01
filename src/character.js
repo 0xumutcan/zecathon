@@ -24,6 +24,7 @@ export function createCharacter(sprites) {
     pose: "look",         // "look" | "walk" | "jump"
     jumpFrame: 0,         // frame of the jump clip, scrubbed by the story
     hole: null,           // { depth, mask } while going into the burrow
+    clipY: null,          // art y below which he is hidden (sitting behind a boat's side)
     lookAt: null,         // art point he stares at (script mode, or something interesting in free mode)
     target: null, idleUntil: 0, gazeGoal: 0, nextGawk: 0,
     angle: 0, engaged: false,
@@ -88,7 +89,7 @@ export function createCharacter(sprites) {
       }
 
       // contact shadow shrinks as he leaves the ground
-      if (ch.lift < 60 && !ch.hole) {
+      if (ch.lift < 60 && !ch.hole && ch.clipY === null) {
         c.fillStyle = `rgba(22, 24, 34, ${0.32 * ch.alpha * (1 - Math.max(0, ch.lift) / 60)})`;
         c.beginPath();
         c.ellipse(Math.round(ch.x), floorY + 1, (ch.pose === "walk" ? 23 : 20) * ch.scale, 3 * ch.scale, 0, 0, Math.PI * 2);
@@ -108,7 +109,14 @@ export function createCharacter(sprites) {
         ctx.restore();
       };
       if (ch.hole) drawIntoHole(c, sprite, ch.hole.depth, ch.hole.mask);
-      else sprite(c);
+      else if (ch.clipY !== null) {
+        c.save();
+        c.beginPath();
+        c.rect(0, 0, stage.W, Math.round(ch.clipY));
+        c.clip();
+        sprite(c);
+        c.restore();
+      } else sprite(c);
     },
   };
 

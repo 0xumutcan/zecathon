@@ -11,6 +11,8 @@ import { createStory } from "./story.js";
 import { createFloor } from "./floor.js";
 import { createQuest } from "./quest.js";
 import { createTunnel } from "./tunnel.js";
+import { createFerry } from "./ferry.js";
+import { createFerryQuest } from "./ferryquest.js";
 
 // the dungeon, top to bottom: each floor has its room, its quest, the loot in its chest and the outfit it gives
 const FLOORS = [
@@ -32,8 +34,11 @@ const FLOORS = [
     id: "floor3", quest: "shield", item: 2, outfit: ["2_tee", "3_jacket"],
     lines: {
       land: "Why is it wet down here?", board: "A board about... boats?", afterQuest: "The shielded ones just... weren't there.",
-      chest: "Treasure, by the water!", wear: "A jacket. I look like I know things now.", exit: "Not agai—",
+      chest: "Treasure, by the water!", wear: "A jacket. I look like I know things now.",
+      ferry: "Excuse me... are you the ferryman?", climb: "Wobbly!", sail: "Bye, watchers. You'll never know where I went.",
     },
+    // he leaves this floor by boat instead of a portal; the boat is moored here (room image px)
+    ferry: { x: 2100, water: 1385, arch: 1780 },
   },
 ];
 
@@ -41,7 +46,7 @@ initStage();
 const lenis = new Lenis({ lerp: 0.1 });
 
 (async () => {
-  const [surface, rooms, look, walk, jump, rabbitSheet, rabbitDive, chest, items] = await Promise.all([
+  const [surface, rooms, look, walk, jump, rabbitSheet, rabbitDive, chest, items, ferryman, boatSheet] = await Promise.all([
     createSurface(),
     Promise.all(FLOORS.map((f) => createRoom(f.id))),
     loadSprite("character", "0_base"),
@@ -51,6 +56,8 @@ const lenis = new Lenis({ lerp: 0.1 });
     loadSprite("actors", "rabbit_dive", "png"),
     loadSprite("actors", "chest", "png"),
     loadSprite("actors", "items", "png"),
+    loadSprite("actors", "ferryman", "png"),
+    loadSprite("actors", "boat", "png"),
   ]);
   const ch = createCharacter({ look, walk, jump });
   const rabbit = createRabbit(rabbitSheet, rabbitDive);
@@ -90,6 +97,10 @@ const lenis = new Lenis({ lerp: 0.1 });
       section: document.getElementById(f.id),
       room: rooms[i], quest: createQuest(f.quest), chest, items, itemIndex: f.item,
       ch, speech, outfit: wardrobe(f.outfit), lines: f.lines,
+      ferry: f.ferry && {
+        boat: createFerry({ room: rooms[i], man: ferryman, boat: boatSheet, spot: f.ferry }),
+        quest: createFerryQuest(),
+      },
     });
     floor.room = rooms[i];
     return floor;
@@ -119,7 +130,7 @@ const lenis = new Lenis({ lerp: 0.1 });
     if (active) {
       active.room.draw(now);
       active.post(now, dt);
-      active.drawProps();
+      active.drawProps(now);
     } else {
       surface.draw(now);
       story.post(now, dt);

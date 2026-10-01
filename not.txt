@@ -1,0 +1,8 @@
+her zindan odasında duvarda bir görev tahtası (oyunlarda olan) karakter yeni bir zindan odasına girdiğinde önce görev tahtasına yürür (scroll ile)
+karakter görev tahtasına gelene kadar scroll atıldıktan sonra karakterin karşısına o katın görevini bildiren bir ekran gelir (tercihen oyunun temasına uygun, parşömen veya taş yazıt gibi bişey) orada scroll lock olur kullanıcı görevi tamamlamadan scroll'a devam edemez. görev tamamlanır yeni açılan ekran gider. kullanıcı scroll'a devam eder ve sandığa ulaşır. scrolla devam ettikçe sandık açılır o katın itemı karaktere işlenir ve karakter değişir. scroll devam eder, karakter zindanın yeni bir odasına düşer, yeni görev tahtasına gider vs. döngü devam eder.
+
+
+hikayeye beyaz bir pixel tavşan dahil edelim. ilk ortamdan zindana geçiş karakterin scroll ile beyaz tavşanı takip edip bir rabbit hole'a atlamasıyla olsun. hep yer kırılma mekaniğini kullanmayalım.
+
+
+shielded transparent muhabbetini daha belirgin kılmak için amiral battı gibi bir oyun tasarlayabiliriz. kullanıcı shielded olmayan txleri avlamaya çalışır. modern ve teknolojik görünen bir amiral battı oyunu temelde. ama teması shielded / transparent transactionlar. shieldedlar korumalı olacak onlar vurulamayacak diğerleri vurulabilecek gibi

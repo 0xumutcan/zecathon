@@ -1,0 +1,10 @@
+node_modules/
+dist/
+
+# raw AI downloads (stills, videos, sheets): large, and the site only needs the processed files in public/
+art/
+
+# sprite-processing scratch dirs (tools/process-sprite.mjs)
+tools/.tmp-*/
+
+.claude/settings.local.json

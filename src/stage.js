@@ -9,7 +9,15 @@ export const stage = {
   W: 0, H: 0, // px canvas size in art units
   px: null, pctx: null,
   bg: null, bctx: null,
+  scrollY: 0, // smooth-scroll position (fractional), set every frame by main.js
 };
+
+// 0..1 progress through a chapter section. Uses the fractional smooth-scroll value rather than the
+// page's rounded scroll position, so motion driven by it eases out without whole-pixel hiccups.
+export function sectionProgress(section) {
+  const span = section.offsetHeight - innerHeight;
+  return Math.min(1, Math.max(0, (stage.scrollY - section.offsetTop) / span));
+}
 
 export const input = { mouse: null, lastMove: -Infinity };
 

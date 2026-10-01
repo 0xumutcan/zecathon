@@ -2,7 +2,7 @@
 // walk to the chest, open it, wear what's inside, then get pulled down through a portal to the next floor.
 // Like story.js, everything is a function of scroll progress, except the quest lock, which holds the
 // scroll until the task is complete.
-import { stage } from "./stage.js";
+import { stage, sectionProgress } from "./stage.js";
 import { drawProp, drawGlow } from "./props.js";
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -38,8 +38,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
 
     pre() {
       prevQ = q;
-      const r = section.getBoundingClientRect();
-      q = clamp01(-r.top / (r.height - innerHeight));
+      q = sectionProgress(section);
       const full = Math.hypot(stage.W, stage.H);
       if (q < PORTAL[1]) {
         floor.portal = { window: { x: stage.W / 2, y: fallY() - BODY, r: full * ease(seg(q, ...PORTAL)) } };
@@ -81,10 +80,8 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
       }
       ch.lift = floorY - feetY;
 
-      const dx = x - ch.x;
-      ch.pose = Math.abs(dx) > 0.01 && q > DROP[1] && exit === 0 ? "walk" : "look";
-      if (ch.pose === "walk") { ch.walkDist += Math.abs(dx); ch.facing = Math.sign(dx); }
-      ch.x = x;
+      ch.pose = "look";
+      ch.scriptMove(x, now, dt, q > DROP[1] && exit === 0);
 
       // --- what he stares at
       const chestTop = floorY - 40;

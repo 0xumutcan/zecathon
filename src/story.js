@@ -1,6 +1,6 @@
 // Maps scroll progress through the surface chapter onto what happens on screen.
 // Everything is a pure function of progress, so scrolling back rewinds the scene.
-import { stage } from "./stage.js";
+import { stage, sectionProgress } from "./stage.js";
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const seg = (p, a, b) => clamp01((p - a) / (b - a));      // 0..1 inside [a, b]
@@ -34,8 +34,7 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
     // before the background is drawn: scroll position
     pre() {
       prevP = p;
-      const r = section.getBoundingClientRect();
-      p = clamp01(-r.top / (r.height - innerHeight));
+      p = sectionProgress(section);
       hero.style.opacity = String(1 - seg(p, 0, 0.06));
       const iris = seg(p, ...IRIS);
       story.portal = iris <= 0 ? null : {
@@ -126,11 +125,8 @@ export function createStory({ section, hero, hint, surface, ch, rabbit, speech }
         ch.hole = null;
         ch.rot = Math.sin(now / 260) * 0.22;
       }
-      const dx = x - ch.x;
-      ch.pose = jump > 0 && jump < 1 && fall === 0 ? "jump"
-        : Math.abs(dx) > 0.01 && jump === 0 && fall === 0 ? "walk" : "look";
-      if (ch.pose === "walk") { ch.walkDist += Math.abs(dx); ch.facing = Math.sign(dx); }
-      ch.x = x;
+      ch.pose = jump > 0 && jump < 1 && fall === 0 ? "jump" : "look";
+      ch.scriptMove(x, now, dt, jump === 0 && fall === 0);
       ch.lookAt = fall > 0 ? { x: ch.x, y: -500 }
         : p >= RABBIT_DIVE[1] ? { x: hole.x, y: hole.y }
         : rabbit.headPoint(floorY);

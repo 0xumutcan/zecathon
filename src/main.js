@@ -98,6 +98,7 @@ const lenis = new Lenis({ lerp: 0.1 });
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
     lenis.raf(now);
+    stage.scrollY = lenis.scroll;
 
     story.pre();
     for (const f of floorObjs) f.pre();
@@ -144,6 +145,15 @@ const lenis = new Lenis({ lerp: 0.1 });
         };
       },
       run(ms) { let t = performance.now(); for (let i = 0; i < ms / 16; i++) render((t += 16)); },
+      // smooth-scroll to a position like a wheel flick would, recording his pose every frame
+      settle(progress, id, frames = 120) {
+        const s = document.getElementById(id);
+        lenis.scrollTo(s.offsetTop + progress * (s.offsetHeight - innerHeight));
+        const poses = [];
+        let t = performance.now();
+        for (let i = 0; i < frames; i++) { render((t += 16)); poses.push(ch.pose[0]); }
+        return poses.join("");
+      },
       floors: floorObjs, ch,
     };
   }

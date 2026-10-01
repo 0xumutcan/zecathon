@@ -32,6 +32,21 @@ export function createCharacter(sprites) {
 
     attentive(now) { return input.mouse && now - input.lastMove < IDLE_AFTER; },
 
+    // Script mode: put him at x. He walks while x is really moving and stands once it has settled.
+    // Smooth scrolling keeps creeping by fractions of a pixel after you stop; deciding per frame made him
+    // flick between walking and standing, so walking needs real speed and stopping needs a short calm.
+    scriptMove(x, now, dt, canWalk = true) {
+      const dx = ch.x === null ? 0 : x - ch.x;
+      // smoothed speed (art px/s, ~0.1s time constant) so a single uneven frame can't start or stop a step
+      if (dt > 0) ch.speed = (ch.speed ?? 0) + (Math.abs(dx) / dt - (ch.speed ?? 0)) * (1 - Math.exp(-dt / 0.1));
+      if (Math.abs(dx) > 0.05) ch.facing = Math.sign(dx);
+      // start walking above 12 px/s, keep walking until it drops under 4 px/s
+      ch.walking = canWalk && (ch.walking ? ch.speed > 4 : ch.speed > 12);
+      if (ch.walking) ch.walkDist += Math.abs(dx);
+      ch.pose = ch.walking ? "walk" : ch.pose === "jump" ? "jump" : "look";
+      ch.x = x;
+    },
+
     update(now, dt, floorY, interest) {
       const { look, walk } = ch.sprites;
       const margin = look.meta.frameW * 0.3;

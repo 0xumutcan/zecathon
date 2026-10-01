@@ -13,6 +13,7 @@ import { createQuest } from "./quest.js";
 import { createTunnel } from "./tunnel.js";
 import { createFerry } from "./ferry.js";
 import { createFerryQuest } from "./ferryquest.js";
+import { createFinal } from "./final.js";
 
 // the dungeon, top to bottom: each floor has its room, its quest, the loot in its chest and the outfit it gives
 const FLOORS = [
@@ -48,7 +49,7 @@ const lenis = new Lenis({ lerp: 0.1 });
 (async () => {
   const [surface, rooms, look, walk, jump, rabbitSheet, rabbitDive, chest, items, ferryman, boatSheet] = await Promise.all([
     createSurface(),
-    Promise.all(FLOORS.map((f) => createRoom(f.id))),
+    Promise.all([...FLOORS.map((f) => f.id), "final"].map((id) => createRoom(id))),
     loadSprite("character", "0_base"),
     loadSprite("character", "walk"),
     loadSprite("character", "jump"),
@@ -79,9 +80,10 @@ const lenis = new Lenis({ lerp: 0.1 });
       try { sheets[name] = await loadSprite("character", name); } catch {}
       try { sheets[`walk_${name}`] = await loadSprite("character", `walk_${name}`); } catch {}
     }
+    try { sheets["5_master"] = await loadSprite("character", "5_master"); } catch {}
   })();
   // newest outfit that has arrived, going backwards from the one asked for
-  const ORDER = ["0_base", ...FLOORS.map((f) => f.outfit[1])];
+  const ORDER = ["0_base", ...FLOORS.map((f) => f.outfit[1]), "5_master"];
   const latest = (name, prefix = "") => {
     for (let i = ORDER.indexOf(name); i >= 0; i--) if (sheets[prefix + ORDER[i]]) return sheets[prefix + ORDER[i]];
   };
@@ -105,6 +107,17 @@ const lenis = new Lenis({ lerp: 0.1 });
     floor.room = rooms[i];
     return floor;
   });
+  // the far shore: the oracle's exam and the change into the Zcash Master
+  const finalRoom = rooms[FLOORS.length];
+  const finalScene = createFinal({
+    section: document.getElementById("final"),
+    room: finalRoom, quest: createQuest("final"), ch, speech,
+    ferry: createFerry({ room: finalRoom, man: ferryman, boat: boatSheet, spot: { x: 2100, water: 1390, arch: 3300 } }),
+    outfit: wardrobe(["3_jacket", "5_master"]),
+    ending: setupEnding(document.getElementById("ending")),
+  });
+  const scenes = [...floorObjs, finalScene];
+  const fog = document.getElementById("fog"), flash = document.getElementById("flash");
   document.body.classList.add("ready");
 
   let last = performance.now();
@@ -119,14 +132,14 @@ const lenis = new Lenis({ lerp: 0.1 });
     stage.scrollY = lenis.scroll;
 
     story.pre();
-    for (const f of floorObjs) f.pre();
+    for (const f of scenes) f.pre();
     // a quest holds the page: no scrolling past its board until it's done (going back up is fine)
-    for (const f of floorObjs) {
+    for (const f of scenes) {
       if (f.lockY !== null && lenis.scroll > f.lockY) { lenis.scrollTo(f.lockY, { immediate: true }); break; }
     }
 
     // the deepest chapter that has started is the one on screen
-    const active = [...floorObjs].reverse().find((f) => f.progress > 0) ?? null;
+    const active = [...scenes].reverse().find((f) => f.progress > 0) ?? null;
     if (active) {
       active.room.draw(now);
       active.post(now, dt);
@@ -145,6 +158,8 @@ const lenis = new Lenis({ lerp: 0.1 });
     if (!active) surface.drawDust(dt, now);
     ch.draw(now, dt, active ? active.room.floorY : surface.floorY);
     speech.update(now, ch.head, ch.attentive(now));
+    fog.style.opacity = String(active?.fog ?? 0);
+    flash.style.opacity = String(active?.flash ?? 0);
   }
   requestAnimationFrame(frame);
 
@@ -158,7 +173,7 @@ const lenis = new Lenis({ lerp: 0.1 });
         for (let i = 0; i < frames; i++) render((t += 16));
         return {
           surface: +story.progress.toFixed(3),
-          floors: floorObjs.map((f) => +f.progress.toFixed(3)),
+          floors: scenes.map((f) => +f.progress.toFixed(3)),
           ch: { x: Math.round(ch.x), pose: ch.pose, lift: Math.round(ch.lift) },
         };
       },
@@ -172,7 +187,20 @@ const lenis = new Lenis({ lerp: 0.1 });
         for (let i = 0; i < frames; i++) { render((t += 16)); poses.push(ch.pose[0]); }
         return poses.join("");
       },
-      floors: floorObjs, ch,
+      floors: scenes, ch,
     };
   }
 })();
+
+// the ending card: share the trip, or forget all progress and go back to the park
+function setupEnding(el) {
+  const text = "I followed a golden rabbit down into the dungeon and came out a Zcash Master. Your turn:";
+  const url = location.origin + location.pathname;
+  el.querySelector(".share").href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+  el.querySelector(".again").addEventListener("click", () => {
+    try { Object.keys(localStorage).filter((k) => k.startsWith("zq:")).forEach((k) => localStorage.removeItem(k)); } catch {}
+    scrollTo(0, 0);
+    location.reload();
+  });
+  return el;
+}

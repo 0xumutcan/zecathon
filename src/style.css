@@ -69,14 +69,40 @@ main { position: relative; }
   filter: drop-shadow(var(--px) 0 0 var(--ink)) drop-shadow(calc(var(--px) * -1) 0 0 var(--ink)) drop-shadow(0 var(--px) 0 var(--ink));
 }
 
-/* ---- floors (placeholder) ---- */
-.floor {
-  position: relative; z-index: 3; min-height: 100vh;
-  display: grid; place-content: center; text-align: center; gap: 6px;
-  background: var(--night);
+/* ---- lake mist and the transformation flash, over both canvases ---- */
+#fog, #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; }
+#fog { z-index: 1; background: radial-gradient(ellipse at 50% 60%, #9fb8b6, #5d7476 70%, #3c4c50); }
+#flash { z-index: 1; background: radial-gradient(circle at 50% 55%, #fffbe8, #ffe08a 45%, rgba(244, 183, 40, .6)); }
+
+/* ---- the ending card ---- */
+#ending {
+  position: fixed; z-index: 4; left: clamp(16px, 5vw, 80px); top: 50%; translate: 0 -46%;
+  width: min(380px, calc(100vw - 32px));
+  padding: calc(var(--px) * 8) calc(var(--px) * 9);
+  background: rgba(21, 18, 15, .92); color: var(--paper);
+  box-shadow:
+    0 calc(var(--px) * -2) 0 0 var(--gold), 0 calc(var(--px) * 2) 0 0 var(--gold),
+    calc(var(--px) * -2) 0 0 0 var(--gold), calc(var(--px) * 2) 0 0 0 var(--gold),
+    0 calc(var(--px) * 6) 0 0 rgba(0, 0, 0, .45);
+  opacity: 0; pointer-events: none; transition: opacity .4s steps(5), translate .4s steps(5);
 }
-.floor h2 { margin: 0; font: 700 clamp(28px, 4vw, 52px)/1 "Pixelify Sans", monospace; color: var(--gold); }
-.floor .sub { opacity: .7; }
+#ending.show { opacity: 1; pointer-events: auto; translate: 0 -50%; }
+#ending .eyebrow { color: var(--gold); opacity: 1; }
+#ending h2 { margin: 0 0 10px; font: 700 clamp(30px, 3.4vw, 42px)/1 "Pixelify Sans", monospace; color: var(--gold); }
+#ending p { margin: 0 0 8px; }
+#ending ul { margin: 0 0 12px; padding-left: 20px; display: grid; gap: 3px; }
+#ending .you { font-weight: 500; color: #fff; }
+#ending .acts { display: flex; gap: 10px; margin-top: 14px; }
+#ending .acts a, #ending .acts button {
+  cursor: pointer; padding: 11px 16px; border: 0; text-decoration: none; font: 700 16px/1 "Pixelify Sans", monospace;
+}
+#ending .share { background: var(--gold); color: #2b1b10; box-shadow: 0 4px 0 0 #a3740c; }
+#ending .again { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 2px rgba(242, 239, 230, .4); }
+@media (max-width: 640px) {
+  #ending { top: auto; bottom: 16px; translate: 0 10px; left: 16px; }
+  #ending.show { translate: 0 0; }
+  #ending ul, #ending p:not(.eyebrow):not(.you) { display: none; } /* keep the Master visible above it */
+}
 
 /* ---- quest parchment ---- */
 .quest {

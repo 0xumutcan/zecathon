@@ -25,6 +25,15 @@ const ROOMS = {
     // glowing crystals over the underground water: a slow cold pulse instead of a flicker
     crystals: [{ x: 780, y: 530 }, { x: 200, y: 730 }, { x: 2070, y: 590 }, { x: 2050, y: 980 }, { x: 1570, y: 1080 }, { x: 1990, y: 1050 }],
   },
+  // the far shore: no torches, the oracle's orb glows instead, and daylight falls through the skylight
+  final: {
+    torches: [],
+    lantern: { x: 874, y: 830 },
+    board: { x: 874, y: 830 },  // the oracle (where the exam happens)
+    chestX: 1420,               // the middle of the light beam on the floor
+    beam: { x: 1380, y: 60 },   // the skylight
+    crystals: [{ x: 200, y: 730 }, { x: 2070, y: 590 }, { x: 2050, y: 980 }, { x: 1570, y: 1080 }, { x: 1990, y: 1050 }],
+  },
 };
 
 export async function createRoom(name) {

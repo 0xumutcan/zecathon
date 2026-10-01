@@ -53,6 +53,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
     get progress() { return q; },
     lockY: null,  // absolute scroll position the page may not pass, or null
     portal: null, // tunnel overlay for this frame (see tunnel.js), null while the room is fully open
+    fog: 0,       // lake mist over everything (0..1); a ferry floor ends in it
 
     pre() {
       prevQ = q;
@@ -66,6 +67,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
       } else {
         floor.portal = null;
       }
+      floor.fog = ferry ? ease(seg(q, B.SAIL[1] - 0.04, 1)) : 0;
       const span = section.offsetHeight - innerHeight;
       floor.lockY = !quest.done ? section.offsetTop + B.LOCK * span
         : ferry && !ferry.quest.done ? section.offsetTop + B.LOCK2 * span

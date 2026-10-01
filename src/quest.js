@@ -2,6 +2,7 @@
 // Progress is remembered in this browser so a reload doesn't send anyone back up.
 import { checkAddress } from "./address.js";
 import { shieldQuest } from "./shield.js";
+import { finalQuiz } from "./quiz.js";
 import { store } from "./store.js";
 
 const QUESTS = {
@@ -105,6 +106,7 @@ QUESTS.zec = {
 };
 
 QUESTS.shield = shieldQuest;
+QUESTS.final = finalQuiz;
 
 export function createQuest(id) {
   const def = QUESTS[id];

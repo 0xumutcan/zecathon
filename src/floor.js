@@ -1,6 +1,7 @@
-// One dungeon floor: land through the ceiling, walk to the quest board, get stopped until the quest is done,
-// walk to the chest, open it, and wear what's inside. Like story.js, everything is a function of scroll
-// progress, except the quest lock, which holds the scroll until the task is complete.
+// One dungeon floor: drop in through a portal, walk to the quest board, get stopped until the quest is done,
+// walk to the chest, open it, wear what's inside, then get pulled down through a portal to the next floor.
+// Like story.js, everything is a function of scroll progress, except the quest lock, which holds the
+// scroll until the task is complete.
 import { stage } from "./stage.js";
 import { drawProp, drawGlow } from "./props.js";
 
@@ -17,58 +18,77 @@ const LOCK = 0.34;          // the quest panel holds the scroll here
 const TO_CHEST = [0.4, 0.55];
 const CHEST = [0.57, 0.8];
 const WEAR = 0.78;          // the item lands on him
+const EXIT = [0.86, 0.94];  // a portal opens under him and swallows him; the tunnel takes over
+const BODY = 110;           // art px from his feet to the middle of his body
 
-export function createFloor({ section, room, quest, chest, items, itemIndex, ch, speech, outfit }) {
+/**
+ * @param lines   what he says: { land, board, afterQuest, chest, wear, exit }
+ * @param outfit  { before, after } look sheets; `after` may be swapped in once it has downloaded
+ */
+export function createFloor({ section, room, quest, chest, items, itemIndex, ch, speech, outfit, lines }) {
   let q = 0, prevQ = 0;
   const crossed = (at) => prevQ < at && q >= at;
   const sparks = [];
+  const fallY = () => stage.H * 0.58;
 
   const floor = {
     get progress() { return q; },
     lockY: null,  // absolute scroll position the page may not pass, or null
-    portal: null, // tunnel overlay for this frame (see tunnel.js), null once the room is fully open
+    portal: null, // tunnel overlay for this frame (see tunnel.js), null while the room is fully open
 
     pre() {
       prevQ = q;
       const r = section.getBoundingClientRect();
       q = clamp01(-r.top / (r.height - innerHeight));
-      const open = seg(q, ...PORTAL);
-      floor.portal = open >= 1 ? null : {
-        window: { x: stage.W / 2, y: stage.H * 0.58 - 110, r: Math.hypot(stage.W, stage.H) * ease(open) },
-      };
-      const lockAt = section.offsetTop + LOCK * (section.offsetHeight - innerHeight);
-      floor.lockY = quest.done ? null : lockAt;
+      const full = Math.hypot(stage.W, stage.H);
+      if (q < PORTAL[1]) {
+        floor.portal = { window: { x: stage.W / 2, y: fallY() - BODY, r: full * ease(seg(q, ...PORTAL)) } };
+      } else if (q >= EXIT[0]) {
+        const t = seg(q, ...EXIT);
+        floor.portal = { window: { x: ch.x, y: ch.head.top + 110, r: full * (1 - ease(t)) } };
+      } else {
+        floor.portal = null;
+      }
+      floor.lockY = quest.done ? null : section.offsetTop + LOCK * (section.offsetHeight - innerHeight);
       if (q >= LOCK - 0.005 && !quest.done) quest.show();
       if (q < LOCK - 0.04) quest.hide(); // scrolled back up: put the parchment away
     },
 
     post(now, dt) {
-      const floorY = room.floorY, H = stage.H;
+      const floorY = room.floorY;
       ch.mode = "script";
       speech.autoTalk = false; // on a floor only the story speaks
       ch.hole = null; ch.alpha = 1; ch.scale = 1; ch.rot = 0; ch.squash = 0;
 
       // --- drop out of the tunnel into the room and land
-      const fallY = H * 0.58;
       let feetY = floorY;
       if (q < DROP[1]) {
-        feetY = q < DROP[0] ? fallY : lerp(fallY, floorY, seg(q, ...DROP) ** 2);
+        feetY = q < DROP[0] ? fallY() : lerp(fallY(), floorY, seg(q, ...DROP) ** 2);
         ch.rot = Math.sin(now / 260) * 0.22 * (1 - seg(q, ...DROP));
       }
       ch.squash = 0.22 * Math.sin(Math.PI * seg(q, ...SQUASH));
-      ch.lift = floorY - feetY;
 
       // --- walk: center -> quest board -> chest
       const boardX = room.board.x + 12, chestStandX = room.chestX - 74;
-      const x = q < TO_CHEST[0] ? lerp(stage.W / 2, boardX, ease(seg(q, ...TO_BOARD))) : lerp(boardX, chestStandX, ease(seg(q, ...TO_CHEST)));
+      let x = q < TO_CHEST[0] ? lerp(stage.W / 2, boardX, ease(seg(q, ...TO_BOARD))) : lerp(boardX, chestStandX, ease(seg(q, ...TO_CHEST)));
+
+      // --- leave: pulled into the portal under him, drifting to the middle of the screen and tumbling
+      const exit = ease(seg(q, ...EXIT));
+      if (exit > 0) {
+        x = lerp(chestStandX, stage.W / 2, exit);
+        feetY = lerp(floorY, fallY(), exit);
+        ch.rot = Math.sin(now / 260) * 0.22 * exit;
+      }
+      ch.lift = floorY - feetY;
+
       const dx = x - ch.x;
-      ch.pose = Math.abs(dx) > 0.01 && q > DROP[1] ? "walk" : "look";
+      ch.pose = Math.abs(dx) > 0.01 && q > DROP[1] && exit === 0 ? "walk" : "look";
       if (ch.pose === "walk") { ch.walkDist += Math.abs(dx); ch.facing = Math.sign(dx); }
       ch.x = x;
 
       // --- what he stares at
       const chestTop = floorY - 40;
-      ch.lookAt = q < DROP[1] ? { x: ch.x, y: -500 }
+      ch.lookAt = q < DROP[1] || exit > 0 ? { x: ch.x, y: -500 }
         : q < TO_BOARD[1] + 0.06 ? { x: room.board.x, y: room.board.y }
         : q < CHEST[0] ? { x: room.chestX, y: chestTop }
         : q < WEAR ? itemPos(floorY)
@@ -78,11 +98,12 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
       ch.sprites.look = q >= WEAR ? outfit.after : outfit.before;
       if (crossed(WEAR)) burst(ch.x, ch.head.top + 10);
 
-      if (crossed(SQUASH[0] + 0.01)) speech.say("Ouch.", now, 900);
-      if (crossed(TO_BOARD[1] - 0.01)) speech.say("A quest board? For me?", now, 1600);
-      if (crossed(TO_CHEST[0] + 0.02)) speech.say("I have a wallet now. I think.", now, 1400);
-      if (crossed(CHEST[0])) speech.say("Treasure?!", now, 1000);
-      if (crossed(WEAR + 0.01)) speech.say("A cap! It even has a Z on it.", now, 1800);
+      if (crossed(SQUASH[0] + 0.01)) speech.say(lines.land, now, 900);
+      if (crossed(TO_BOARD[1] - 0.01)) speech.say(lines.board, now, 1600);
+      if (crossed(TO_CHEST[0] + 0.02)) speech.say(lines.afterQuest, now, 1400);
+      if (crossed(CHEST[0])) speech.say(lines.chest, now, 1000);
+      if (crossed(WEAR + 0.01)) speech.say(lines.wear, now, 1800);
+      if (crossed(EXIT[0] + 0.005)) speech.say(lines.exit, now, 1000);
 
       ch.update(now, dt, floorY, null);
       updateSparks(dt);
@@ -104,7 +125,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
     },
   };
 
-  // the item: rises out of the chest, hangs a moment, then arcs onto his head
+  // the item: rises out of the chest, hangs a moment, then arcs onto him
   function itemPos(floorY) {
     const rise = ease(seg(q, 0.62, 0.69)), fly = ease(seg(q, 0.71, WEAR));
     const sx = room.chestX, sy = floorY - 30 - rise * 70;

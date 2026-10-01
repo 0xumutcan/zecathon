@@ -130,6 +130,20 @@ main { position: relative; }
 .check button, .quest .skip { cursor: pointer; font: 700 16px/1 "Pixelify Sans", monospace; border: 0; }
 .check button { padding: 10px 16px; background: var(--gold); color: var(--ink-q); box-shadow: 0 4px 0 0 #a3740c; }
 .check button:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
+.ways div { display: grid; gap: 4px; padding: 10px 12px; background: var(--wood); color: var(--paper-q); }
+.choices, .confirm { display: grid; gap: 6px; margin-top: 6px; }
+.confirm { grid-template-columns: 1fr 1fr; }
+.choices button, .confirm button {
+  cursor: pointer; text-align: left; padding: 10px 12px; border: 0;
+  font: 500 14px/1.3 Inter, system-ui, sans-serif; color: var(--ink-q);
+  background: #f8efd8; box-shadow: inset 0 0 0 2px var(--wood);
+}
+.choices button:hover, .confirm button:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--wood), 0 0 0 2px var(--gold); }
+.choices button.picked { background: var(--wood); color: var(--paper-q); }
+.confirm button { text-align: center; font: 700 16px/1 "Pixelify Sans", monospace; background: var(--gold); box-shadow: 0 4px 0 0 #a3740c; }
+.confirm button.ghost { background: #f8efd8; box-shadow: inset 0 0 0 2px var(--wood); }
+.confirm button:disabled { opacity: .4; cursor: not-allowed; }
+.note { margin: 0 0 4px; font-size: 14px; opacity: .85; }
 .result { min-height: 1.5em; margin: 8px 0 0; font-size: 14px; }
 .result.good { color: #2f6b2a; font-weight: 600; }
 .result.bad { color: #9a2a1a; }

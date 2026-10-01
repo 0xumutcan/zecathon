@@ -11,6 +11,12 @@ const ROOMS = {
     board: { x: 877, y: 921 },  // quest board center
     chestX: 2120,               // where the chest stands on the floor
   },
+  floor2: {
+    torches: [{ x: 383, y: 750 }, { x: 2377, y: 750 }],
+    lantern: { x: 1146, y: 863 },
+    board: { x: 876, y: 976 },
+    chestX: 2150,               // right of the coin stacks
+  },
 };
 
 export async function createRoom(name) {

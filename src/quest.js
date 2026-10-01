@@ -51,6 +51,62 @@ const QUESTS = {
   },
 };
 
+QUESTS.zec = {
+  eyebrow: "Quest II · The Old Mint",
+  title: "Put some ZEC in your pocket",
+  intro: "A wallet with nothing in it is just a nice idea. Get a little ZEC: a dollar or two is plenty for the floors below.",
+  reward: "A golden tee is waiting in the chest.",
+  body() {
+    return `
+      <ol class="steps">
+        <li>
+          <b>Pick a way in</b>
+          <div class="wallets ways">
+            <div><span>An exchange</span><small>Most big exchanges list ZEC. Buy, then withdraw to your wallet.</small></div>
+            <div><span>Swap in-wallet</span><small>Zodl can swap other coins into ZEC without leaving the app.</small></div>
+            <div><span>A friend</span><small>Someone who has ZEC sends a little to your u1… address.</small></div>
+          </div>
+        </li>
+        <li>
+          <b>The exchange sent it to a <code>t1…</code> address. What now?</b>
+          <div class="choices" role="radiogroup">
+            <button type="button" data-a="ok">Nothing, it's fine where it is</button>
+            <button type="button" data-a="shield">Shield it: move it into my private balance</button>
+            <button type="button" data-a="back">Send it back to the exchange</button>
+          </div>
+          <p class="result quiz" role="status"></p>
+        </li>
+        <li>
+          <b>Is it in your wallet?</b>
+          <p class="note">We can't see your balance. That's the whole point of shielded. So we'll take your word for it; Floor IV will prove it.</p>
+          <div class="confirm">
+            <button type="button" data-c="yes" disabled>It arrived</button>
+            <button type="button" data-c="later" class="ghost" disabled>Not yet, I'll get it later</button>
+          </div>
+        </li>
+      </ol>`;
+  },
+  wire(panel, done) {
+    const result = panel.querySelector(".quiz");
+    const answers = {
+      ok: "Careful: on a t1… address every payment, and your whole balance, is public forever. Try again.",
+      back: "No need to undo anything. The coins are yours, they're just sitting in the open. Try again.",
+      shield: "Exactly. One tap on Shield in your wallet and the coins move into your private balance.",
+    };
+    panel.querySelectorAll(".choices button").forEach((b) => b.addEventListener("click", () => {
+      const right = b.dataset.a === "shield";
+      panel.querySelectorAll(".choices button").forEach((x) => x.classList.toggle("picked", x === b));
+      result.textContent = answers[b.dataset.a];
+      result.className = `result quiz ${right ? "good" : "bad"}`;
+      panel.querySelectorAll(".confirm button").forEach((x) => { x.disabled = !right; });
+    }));
+    panel.querySelectorAll(".confirm button").forEach((b) => b.addEventListener("click", () => {
+      store.set("funded", b.dataset.c === "yes");
+      done();
+    }));
+  },
+};
+
 export function createQuest(id) {
   const def = QUESTS[id];
   const el = document.createElement("div");

@@ -205,3 +205,17 @@ main { position: relative; }
 .lesson-acts button.ghost { background: #f8efd8; box-shadow: inset 0 0 0 2px var(--wood); }
 .quest .rewatch { margin-left: auto; cursor: pointer; border: 0; background: none; color: #8a5a20; font: 600 13px/1 "Pixelify Sans", monospace; }
 .quest .rewatch:hover { color: var(--ink-q); }
+.lesson .soon {
+  aspect-ratio: 16 / 9; display: grid; place-content: center; justify-items: center; gap: 8px; line-height: 1.2;
+  background: radial-gradient(ellipse at 50% 45%, #2a2216, #0d0b09 70%); color: #f2ead8; text-align: center;
+}
+.lesson .soon[hidden] { display: none; }
+.lesson .soon b { font: 700 22px/1 "Pixelify Sans", monospace; color: var(--gold); }
+.lesson .soon span { font: 500 14px/1 "Pixelify Sans", monospace; letter-spacing: .12em; text-transform: uppercase; opacity: .6; }
+.rabbit-big {
+  width: 120px; height: 116px; image-rendering: pixelated;
+  background: url(/actors/rabbit_b.png) 0 0 / 480px 116px no-repeat;
+  animation: fidget 2.4s steps(1) infinite;
+}
+/* sits, then checks the watch now and then */
+@keyframes fidget { 0%, 70% { background-position: 0 0; } 71%, 85% { background-position: -360px 0; } 86%, 100% { background-position: 0 0; } }

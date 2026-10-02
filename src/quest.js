@@ -162,6 +162,7 @@ function lessonHTML({ src, captions }) {
             <source src="${src}" type="video/mp4">
             ${captions ? `<track kind="captions" src="${captions}" srclang="en" label="English" default>` : ""}
           </video>
+          <div class="soon" hidden><i class="rabbit-big" aria-hidden="true"></i><b>The rabbit's lesson</b><span>Video coming soon</span></div>
         </div>
         <div class="lesson-acts"><button type="button" class="go-on ghost">Skip the video</button></div>
       </div>`;
@@ -180,8 +181,12 @@ function wireLesson(el, id) {
   go.addEventListener("click", close);
   rewatch.addEventListener("click", open);
   v.addEventListener("ended", () => { go.textContent = "On to the quest →"; go.classList.remove("ghost"); });
-  // no video file (yet), or it can't play here: straight to the task
-  v.querySelector("source").addEventListener("error", () => { parchment.classList.remove("lesson-on"); rewatch.hidden = true; });
+  // no video file yet: a placeholder screen in its place, so the page still shows how it will look
+  v.querySelector("source").addEventListener("error", () => {
+    v.hidden = true;
+    el.querySelector(".soon").hidden = false;
+    go.textContent = "On to the quest →"; go.classList.remove("ghost");
+  });
   if (store.get(`seen:${id}`)) close();
   return {
     // muted so the browser allows autoplay; captions carry it and the controls can turn the sound on

@@ -46,6 +46,19 @@ const FLOORS = [
 initStage();
 const lenis = new Lenis({ lerp: 0.1 });
 
+// Every section is sized in vh, so when the window's height changes (a video going fullscreen, a phone's
+// address bar) the same pixel scroll lands somewhere else in the story: a quest panel would think you
+// scrolled back up and close. Scaling the scroll with the height keeps you at the same moment.
+// Checked every frame (not only on "resize") so it holds wherever the event is late or missing.
+let lastH = innerHeight;
+function keepPlaceOnResize() {
+  if (innerHeight === lastH) return;
+  const k = innerHeight / lastH;
+  lastH = innerHeight;
+  lenis.resize();
+  lenis.scrollTo(lenis.scroll * k, { immediate: true, force: true });
+}
+
 (async () => {
   const [surface, rooms, look, walk, jump, rabbitSheet, rabbitDive, chest, items, ferryman, boatSheet] = await Promise.all([
     createSurface(),
@@ -129,6 +142,7 @@ const lenis = new Lenis({ lerp: 0.1 });
   function render(now) {
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
+    keepPlaceOnResize();
     lenis.raf(now);
     stage.scrollY = lenis.scroll;
 

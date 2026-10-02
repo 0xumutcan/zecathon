@@ -176,6 +176,8 @@ function lessonHTML({ src, captions }) {
 function wireLesson(el, id) {
   const parchment = el.querySelector(".parchment"), v = el.querySelector(".lesson video");
   const go = el.querySelector(".go-on"), rewatch = el.querySelector(".rewatch");
+  v.muted = true; // the attribute alone (via innerHTML) doesn't count as muted for autoplay rules
+  let timer = 0;
   const close = () => {
     v.pause();
     parchment.classList.remove("lesson-on");
@@ -195,7 +197,17 @@ function wireLesson(el, id) {
   if (store.get(`seen:${id}`)) close();
   return {
     // muted so the browser allows autoplay; captions carry it and the controls can turn the sound on
-    start() { if (parchment.classList.contains("lesson-on")) { v.preload = "auto"; v.play().catch(() => {}); } },
-    stop() { v.pause(); },
+    // Chrome cancels play() on a muted video it can't see yet, so wait until the panel has faded in
+    start() {
+      if (!parchment.classList.contains("lesson-on")) return;
+      v.preload = "auto";
+      clearTimeout(timer);
+      const tryPlay = (again) => {
+        if (!el.classList.contains("show") || !parchment.classList.contains("lesson-on")) return;
+        v.play().catch(() => { if (again) timer = setTimeout(() => tryPlay(false), 600); });
+      };
+      timer = setTimeout(() => tryPlay(true), 350);
+    },
+    stop() { clearTimeout(timer); v.pause(); },
   };
 }

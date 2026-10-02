@@ -98,7 +98,7 @@ const lenis = new Lenis({ lerp: 0.1 });
   const floorObjs = FLOORS.map((f, i) => {
     const floor = createFloor({
       section: document.getElementById(f.id),
-      room: rooms[i], quest: createQuest(f.quest, { video: f.video && { src: f.video, captions: f.video.replace(".mp4", ".vtt") } }), chest, items, itemIndex: f.item,
+      room: rooms[i], quest: createQuest(f.quest, { video: f.video && { src: f.video } }), chest, items, itemIndex: f.item, // captions are burned into the videos
       ch, speech, outfit: wardrobe(f.outfit), lines: f.lines, rabbit: guide,
       ferry: f.ferry && {
         boat: createFerry({ room: rooms[i], man: ferryman, boat: boatSheet, spot: f.ferry }),

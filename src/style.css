@@ -285,3 +285,16 @@ main { position: relative; }
 }
 /* while the rabbit's video is on, its own button moves on; the skip card would skip the video too */
 .qwrap:has(> .parchment.lesson-on) > .skip-side { display: none; }
+
+/* ---- the share card on the ending card, with a copy button on its corner ---- */
+#ending { width: min(420px, calc(100vw - 32px)); }
+#ending .badge { position: relative; margin: 0 0 14px; line-height: 0; box-shadow: 0 0 0 var(--px) rgba(244, 183, 40, .6); }
+#ending .badge img { width: 100%; height: auto; display: block; }
+#ending .copy-card {
+  position: absolute; right: 8px; bottom: 8px; cursor: pointer; border: 0; padding: 8px 12px;
+  font: 700 14px/1 "Pixelify Sans", monospace; color: #2b1b10; background: var(--gold);
+  box-shadow: 0 3px 0 0 #a3740c, 0 4px 14px rgba(0, 0, 0, .45);
+}
+#ending .copy-card::before { content: "⧉ "; }
+#ending .copy-card:active { translate: 0 2px; box-shadow: 0 1px 0 0 #a3740c; }
+@media (max-width: 640px) { #ending .badge { margin-bottom: 10px; } }

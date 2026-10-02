@@ -195,13 +195,54 @@ const lenis = new Lenis({ lerp: 0.1 });
 
 // the ending card: share the trip, or forget all progress and go back to the park
 function setupEnding(el) {
-  const text = "I followed a golden rabbit down into the dungeon and came out a Zcash Master. Your turn:";
-  const url = location.origin + location.pathname;
-  el.querySelector(".share").href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+  // X's tweet link can only carry text: the image comes from the link's preview card (index.html meta tags),
+  // or people copy the card below and paste it into their post
+  const text = [
+    "I followed a golden rabbit down into the dungeon and came out a Zcash Master.",
+    "",
+    "Your turn: https://zecathon.vercel.app/",
+    "",
+    `${italic("Built for the")} @zksnarks_ ${italic("ZECATHON Wildcard track.")}`, // the mention stays plain so it tags
+  ].join("\n");
+  el.querySelector(".share").href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+
+  // copy the card image (clipboards take PNG, so it's redrawn as one); otherwise fall back to a download
+  const copy = el.querySelector(".copy-card"), img = el.querySelector(".badge img");
+  const png = () => new Promise((resolve, reject) => {
+    const draw = () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error("no image"))), "image/png");
+    };
+    img.complete && img.naturalWidth ? draw() : img.addEventListener("load", draw, { once: true });
+  });
+  copy.addEventListener("click", async () => {
+    try {
+      // the promise goes straight into the ClipboardItem so Safari still counts it as part of the click
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": png() })]);
+      copy.textContent = "Copied! Paste it in your post";
+    } catch {
+      const a = Object.assign(document.createElement("a"), { href: img.src, download: "zcash-master.jpg" });
+      a.click();
+      copy.textContent = "Saved. Attach it to your post";
+    }
+    setTimeout(() => (copy.textContent = "Copy card"), 2400);
+  });
   el.querySelector(".again").addEventListener("click", () => {
     try { Object.keys(localStorage).filter((k) => k.startsWith("zq:")).forEach((k) => localStorage.removeItem(k)); } catch {}
     scrollTo(0, 0);
     location.reload();
   });
   return el;
+}
+
+// X has no italics; Unicode's mathematical sans-serif italic letters look the part (digits and symbols stay as they are)
+function italic(s) {
+  return [...s].map((ch) => {
+    const c = ch.codePointAt(0);
+    if (c >= 65 && c <= 90) return String.fromCodePoint(0x1d608 + c - 65);
+    if (c >= 97 && c <= 122) return String.fromCodePoint(0x1d622 + c - 97);
+    return ch;
+  }).join("");
 }

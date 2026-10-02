@@ -163,10 +163,11 @@ function lessonHTML({ src, captions }) {
       <div class="lesson">
         <p class="by"><i class="rabbit-icon" aria-hidden="true"></i>Before you start, the rabbit has something to show you.</p>
         <div class="screen">
-          <video playsinline muted controls preload="none">
+          <video playsinline preload="none" poster="${src.replace(/\.mp4$/, ".jpg")}">
             <source src="${src}" type="video/mp4">
             ${captions ? `<track kind="captions" src="${captions}" srclang="en" label="English" default>` : ""}
           </video>
+          <button type="button" class="play" aria-label="Play the rabbit's video with sound"><i aria-hidden="true"></i><span>Play</span></button>
           <div class="soon" hidden><i class="rabbit-big" aria-hidden="true"></i><b>The rabbit's lesson</b><span>Video coming soon</span></div>
         </div>
         <div class="lesson-acts"><button type="button" class="go-on" disabled>Watch to continue</button></div>
@@ -176,8 +177,16 @@ function lessonHTML({ src, captions }) {
 function wireLesson(el, id) {
   const parchment = el.querySelector(".parchment"), v = el.querySelector(".lesson video");
   const go = el.querySelector(".go-on"), rewatch = el.querySelector(".rewatch");
-  v.muted = true; // the attribute alone (via innerHTML) doesn't count as muted for autoplay rules
-  let timer = 0;
+  const playBtn = el.querySelector(".lesson .play");
+  // Browsers only allow sound after a click, so the video waits on its poster with a big play button;
+  // the click itself starts it with sound. Its controls appear once it's going.
+  const play = () => {
+    v.muted = false;
+    v.controls = true;
+    playBtn.hidden = true;
+    v.play().catch(() => { playBtn.hidden = false; });
+  };
+  playBtn.addEventListener("click", play);
   const close = () => {
     v.pause();
     parchment.classList.remove("lesson-on");
@@ -189,7 +198,7 @@ function wireLesson(el, id) {
   const open = () => {
     parchment.classList.add("lesson-on"); parchment.scrollTop = 0;
     unlock("Back to the quest →");
-    v.play().catch(() => {});
+    play(); // this is a click too, so sound is allowed
   };
   go.addEventListener("click", close);
   rewatch.addEventListener("click", open);
@@ -206,23 +215,14 @@ function wireLesson(el, id) {
   // no video file yet: a placeholder screen in its place, so the page still shows how it will look
   v.querySelector("source").addEventListener("error", () => {
     v.hidden = true;
+    playBtn.hidden = true;
     el.querySelector(".soon").hidden = false;
     unlock();
   });
   if (store.get(`seen:${id}`)) close();
   return {
-    // muted so the browser allows autoplay; captions carry it and the controls can turn the sound on
-    // Chrome cancels play() on a muted video it can't see yet, so wait until the panel has faded in
-    start() {
-      if (!parchment.classList.contains("lesson-on")) return;
-      v.preload = "auto";
-      clearTimeout(timer);
-      const tryPlay = (again) => {
-        if (!el.classList.contains("show") || !parchment.classList.contains("lesson-on")) return;
-        v.play().catch(() => { if (again) timer = setTimeout(() => tryPlay(false), 600); });
-      };
-      timer = setTimeout(() => tryPlay(true), 350);
-    },
-    stop() { clearTimeout(timer); v.pause(); },
+    // when the panel opens, start fetching so the click plays at once
+    start() { if (parchment.classList.contains("lesson-on")) v.preload = "auto"; },
+    stop() { v.pause(); },
   };
 }

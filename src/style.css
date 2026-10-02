@@ -299,3 +299,19 @@ main { position: relative; }
 #ending .copy-card:active { translate: 0 2px; box-shadow: 0 1px 0 0 #a3740c; }
 @media (max-width: 640px) { #ending .badge { margin-bottom: 10px; } }
 .lesson-acts button:disabled { cursor: default; background: #e9dcbc; color: #8a6a3a; box-shadow: inset 0 0 0 2px rgba(58, 36, 20, .3); font-variant-numeric: tabular-nums; }
+/* the big play button over the video's poster */
+.lesson .screen { position: relative; }
+.lesson .play {
+  position: absolute; inset: 0; margin: auto; width: max-content; height: max-content; cursor: pointer;
+  display: grid; grid-auto-flow: column; align-items: center; gap: 12px; padding: 14px 22px 14px 18px; border: 0;
+  font: 700 22px/1 "Pixelify Sans", monospace; color: #2b1b10; background: var(--gold);
+  box-shadow: 0 5px 0 0 #a3740c, 0 0 0 calc(var(--px) * 2) rgba(13, 11, 9, .6), 0 10px 30px rgba(0, 0, 0, .55);
+  animation: playpulse 1.6s steps(4) infinite;
+}
+.lesson .play[hidden] { display: none; }
+/* a pixel triangle */
+.lesson .play i { width: 18px; height: 20px; background: #2b1b10; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.lesson .play:hover { animation: none; translate: 0 -2px; }
+.lesson .play:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
+@keyframes playpulse { 50% { box-shadow: 0 5px 0 0 #a3740c, 0 0 0 calc(var(--px) * 4) rgba(244, 183, 40, .35), 0 10px 30px rgba(0, 0, 0, .55); } }
+@media (prefers-reduced-motion: reduce) { .lesson .play { animation: none; } }

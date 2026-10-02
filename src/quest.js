@@ -169,7 +169,7 @@ function lessonHTML({ src, captions }) {
           </video>
           <div class="soon" hidden><i class="rabbit-big" aria-hidden="true"></i><b>The rabbit's lesson</b><span>Video coming soon</span></div>
         </div>
-        <div class="lesson-acts"><button type="button" class="go-on ghost">Skip the video</button></div>
+        <div class="lesson-acts"><button type="button" class="go-on" disabled>Watch to continue</button></div>
       </div>`;
 }
 
@@ -184,15 +184,30 @@ function wireLesson(el, id) {
     store.set(`seen:${id}`, true);
     parchment.scrollTop = 0;
   };
-  const open = () => { parchment.classList.add("lesson-on"); parchment.scrollTop = 0; v.play().catch(() => {}); };
+  // the way on opens when the video has played to the end (or straight away when coming back to rewatch it)
+  const unlock = (label = "On to the quest →") => { go.disabled = false; go.textContent = label; };
+  const open = () => {
+    parchment.classList.add("lesson-on"); parchment.scrollTop = 0;
+    unlock("Back to the quest →");
+    v.play().catch(() => {});
+  };
   go.addEventListener("click", close);
   rewatch.addEventListener("click", open);
-  v.addEventListener("ended", () => { go.textContent = "On to the quest →"; go.classList.remove("ghost"); });
+  v.addEventListener("ended", () => unlock());
+  // no scrubbing ahead to the end on the first watch; going back is fine
+  let watched = 0;
+  v.addEventListener("seeking", () => { if (go.disabled && v.currentTime > watched + 1) v.currentTime = watched; });
+  v.addEventListener("timeupdate", () => {
+    if (!v.seeking) watched = Math.max(watched, v.currentTime);
+    if (!go.disabled || !v.duration) return;
+    const left = Math.max(0, Math.ceil(v.duration - v.currentTime));
+    go.textContent = `Watch to continue · 0:${String(left).padStart(2, "0")}`;
+  });
   // no video file yet: a placeholder screen in its place, so the page still shows how it will look
   v.querySelector("source").addEventListener("error", () => {
     v.hidden = true;
     el.querySelector(".soon").hidden = false;
-    go.textContent = "On to the quest →"; go.classList.remove("ghost");
+    unlock();
   });
   if (store.get(`seen:${id}`)) close();
   return {

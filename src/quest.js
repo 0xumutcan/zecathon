@@ -4,6 +4,7 @@ import { checkAddress } from "./address.js";
 import { shieldQuest } from "./shield.js";
 import { finalQuiz } from "./quiz.js";
 import { store } from "./store.js";
+import { skipHTML } from "./skip.js";
 
 const QUESTS = {
   wallet: {
@@ -11,6 +12,7 @@ const QUESTS = {
     title: "Get a pocket nobody can peek into",
     intro: "Down here, money needs a wallet. A shielded one keeps your balance and payments private by default. Install one, then show it to the board.",
     reward: "A golden cap is waiting in the chest.",
+    skip: { hint: "No wallet handy? Jump ahead." },
     body(q) {
       return `
         <ol class="steps">
@@ -54,6 +56,7 @@ QUESTS.zec = {
   title: "Put some ZEC in your pocket",
   intro: "A wallet with nothing in it is just a nice idea. Get a little ZEC: a dollar or two is plenty for the floors below.",
   reward: "A golden tee is waiting in the chest.",
+  skip: { hint: "No ZEC on you? Jump ahead." },
   body() {
     return `
       <ol class="steps">
@@ -119,6 +122,7 @@ export function createQuest(id, { video } = {}) {
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-label", def.title);
   el.innerHTML = `
+    <div class="qwrap${def.wide ? " wide" : ""}">
     <div class="parchment${def.wide ? " wide" : ""}${video ? " lesson-on" : ""}">
       <p class="eyebrow">${def.eyebrow}</p>
       <h2>${def.title}</h2>
@@ -128,8 +132,9 @@ export function createQuest(id, { video } = {}) {
       <footer>
         <span class="reward">${def.reward}</span>
         ${video ? `<button class="rewatch" type="button">▶ The rabbit's video</button>` : ""}
-        <button class="skip" type="button">Just looking? Skip for now</button>
       </footer>
+    </div>
+    ${skipHTML(def.skip)}
     </div>`;
   document.body.append(el);
 
@@ -148,7 +153,7 @@ export function createQuest(id, { video } = {}) {
     setTimeout(() => quest.hide(), how === "skipped" ? 0 : 1400); // let the success line be read
   };
   def.wire(el, () => finish("done"));
-  el.querySelector(".skip").addEventListener("click", () => finish("skipped"));
+  el.querySelector(".skip-side").addEventListener("click", () => finish("skipped"));
   return quest;
 }
 

@@ -220,7 +220,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
       }
     } else if (ferry) {
       // the way across: it hops to the bow and in, then rides up front
-      const boat = ferry.boat, bowX = () => boat.leftX + boat.w * 0.17;
+      const boat = ferry.boat, bowX = () => boat.leftX + boat.w * 0.28;
       if (q >= B.TO_FERRY[0]) x = leg(chestX, bowX(), B.TO_FERRY[0], B.TO_FERRY[1] - 0.02);
       const hop = seg(q, B.CLIMB[0] - 0.04, B.CLIMB[0]);
       if (hop > 0) {

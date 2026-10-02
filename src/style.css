@@ -154,7 +154,7 @@ main { position: relative; }
   background: #f8efd8; color: var(--ink-q); border: 0; box-shadow: inset 0 0 0 2px var(--wood);
 }
 .check input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--wood), 0 0 0 2px var(--gold); }
-.check button, .quest .skip { cursor: pointer; font: 700 16px/1 "Pixelify Sans", monospace; border: 0; }
+.check button { cursor: pointer; font: 700 16px/1 "Pixelify Sans", monospace; border: 0; }
 .check button { padding: 10px 16px; background: var(--gold); color: var(--ink-q); box-shadow: 0 4px 0 0 #a3740c; }
 .check button:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
 .ways div { display: grid; gap: 4px; padding: 10px 12px; background: var(--wood); color: var(--paper-q); }
@@ -176,8 +176,6 @@ main { position: relative; }
 .result.bad { color: #9a2a1a; }
 .parchment footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; padding-top: 12px; border-top: 2px dashed rgba(58, 36, 20, .35); font-size: 13px; }
 .reward { font-weight: 600; color: #8a5a20; }
-.quest .skip { background: none; color: var(--ink-q); opacity: .6; font-size: 13px; text-decoration: underline; }
-.quest .skip:hover { opacity: 1; }
 @media (max-width: 560px) {
   .wallets { grid-template-columns: 1fr; }
   .parchment footer { flex-direction: column; align-items: flex-start; }
@@ -219,3 +217,69 @@ main { position: relative; }
 }
 /* sits, then checks the watch now and then */
 @keyframes fidget { 0%, 70% { background-position: 0 0; } 71%, 85% { background-position: -360px 0; } 86%, 100% { background-position: 0 0; } }
+
+/* ---- the skip card beside every blocking window ---- */
+.qwrap { display: flex; align-items: flex-start; gap: 18px; max-width: 100%; }
+.qwrap > .parchment { flex: 0 1 600px; }
+.qwrap > .parchment.wide { flex-basis: 920px; }
+.ferry-talk .qwrap { align-items: flex-end; width: 100%; justify-content: center; }
+.skip-side {
+  --edge: #f4b728;
+  flex: none; width: 196px; cursor: pointer; border: 0; text-align: left;
+  display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 10px; row-gap: 6px;
+  padding: calc(var(--px) * 6) calc(var(--px) * 6);
+  background: rgba(21, 18, 15, .94); color: #f2ead8;
+  box-shadow:
+    0 calc(var(--px) * -1) 0 0 rgba(244, 183, 40, .55), 0 var(--px) 0 0 rgba(244, 183, 40, .55),
+    calc(var(--px) * -1) 0 0 0 rgba(244, 183, 40, .55), var(--px) 0 0 0 rgba(244, 183, 40, .55),
+    0 calc(var(--px) * 4) 0 0 rgba(0, 0, 0, .4);
+  transition: translate .12s steps(2), box-shadow .12s steps(2);
+}
+.skip-side .t { font: 700 17px/1.1 "Pixelify Sans", monospace; color: var(--edge); white-space: nowrap; }
+.skip-side small { grid-column: 1 / -1; font: 13px/1.35 Inter, sans-serif; color: #c9bfa9; }
+/* a pixel fast-forward: two triangles touching at the middle */
+.skip-side .ff {
+  width: 22px; height: 14px; background: var(--edge);
+  clip-path: polygon(0 0, 50% 50%, 50% 0, 100% 50%, 50% 100%, 50% 50%, 0 100%);
+}
+.skip-side:hover, .skip-side:focus-visible {
+  outline: none; translate: 0 -2px;
+  box-shadow:
+    0 calc(var(--px) * -2) 0 0 var(--edge), 0 calc(var(--px) * 2) 0 0 var(--edge),
+    calc(var(--px) * -2) 0 0 0 var(--edge), calc(var(--px) * 2) 0 0 0 var(--edge),
+    0 calc(var(--px) * 6) 0 0 rgba(0, 0, 0, .4);
+}
+.skip-side:hover .ff { animation: ff .5s steps(2) infinite; }
+@keyframes ff { 50% { translate: 3px 0; } }
+.skip-side:active { translate: 0 1px; }
+/* side by side only where there is room; otherwise the card sits under the window, full width */
+@media (max-width: 900px) {
+  .qwrap { flex-direction: column; align-items: stretch; width: min(600px, 100%); }
+  .ferry-talk .qwrap { align-items: stretch; width: min(880px, 100%); }
+  .qwrap > .parchment, .qwrap > .parchment.wide { flex: none; width: 100%; max-height: calc(100vh - 120px); }
+  .skip-side { width: 100%; grid-template-columns: auto auto 1fr; }
+  .skip-side small { grid-column: auto; }
+}
+@media (min-width: 901px) and (max-width: 1160px) {
+  .qwrap.wide { flex-direction: column; align-items: flex-end; }
+  .qwrap.wide > .parchment.wide { flex: none; width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 110px); }
+  .qwrap.wide .skip-side { width: auto; grid-template-columns: auto auto auto; }
+  .qwrap.wide .skip-side small { grid-column: auto; }
+}
+/* wide screens: the window stays centered and the card hangs off its right edge */
+@media (min-width: 901px) {
+  .qwrap { position: relative; }
+  .qwrap > .skip-side { position: absolute; left: calc(100% + 18px); top: 0; }
+  .ferry-talk .qwrap { width: auto; }
+  .ferry-talk .qwrap > .box { flex: none; width: min(880px, calc(100vw - 32px)); }
+  .ferry-talk .qwrap > .skip-side { top: auto; bottom: 0; }
+}
+@media (min-width: 901px) and (max-width: 1160px) {
+  .qwrap.wide > .skip-side { position: static; }
+}
+@media (min-width: 901px) and (max-width: 1290px) {
+  /* the ferryman's box is wide too: no room beside it, so the card sits on top of it at the right */
+  .ferry-talk .qwrap { flex-direction: column; align-items: flex-end; }
+  .ferry-talk .qwrap > .skip-side { position: static; width: auto; grid-template-columns: auto auto auto; }
+  .ferry-talk .qwrap > .skip-side small { grid-column: auto; }
+}

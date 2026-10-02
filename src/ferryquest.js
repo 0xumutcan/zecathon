@@ -2,6 +2,7 @@ import "./ferryquest.css";
 import qrcode from "qrcode-generator";
 import { checkAddress } from "./address.js";
 import { store } from "./store.js";
+import { skipHTML } from "./skip.js";
 
 // The ferryman's crossing: a conversation at the water's edge that ends in a real payment.
 // You send the fare from your shielded balance with a memo only he can read; he sends the change back.
@@ -49,6 +50,7 @@ export function createFerryQuest() {
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-label", "The ferryman");
   el.innerHTML = `
+    <div class="qwrap">
     <div class="box">
       <div class="who"><div class="face" aria-hidden="true"></div><span>The Ferryman</span></div>
       <div class="talk">
@@ -56,7 +58,8 @@ export function createFerryQuest() {
         <div class="card" hidden></div>
         <div class="answers"></div>
       </div>
-      <button class="skip" type="button">Just looking? Skip for now</button>
+    </div>
+    ${skipHTML({ label: "Skip the fare", hint: "No ZEC to spare? Ride along anyway." })}
     </div>`;
   document.body.append(el);
   const line = el.querySelector(".line"), answers = el.querySelector(".answers"), card = el.querySelector(".card");
@@ -220,7 +223,7 @@ export function createFerryQuest() {
     buttons([]);
     setTimeout(() => quest.hide(), 1200);
   }
-  el.querySelector(".skip").addEventListener("click", () => finish("skipped"));
+  el.querySelector(".skip-side").addEventListener("click", () => finish("skipped"));
 
   return quest;
 }

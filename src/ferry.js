@@ -40,7 +40,7 @@ export function createFerry({ room, man, boat, spot }) {
         leftX: cx - w / 2,
         gunwaleY: bottom - GUNWALE * unit * s,
         deckY: bottom - DECK * unit * s,
-        seat: { x: cx - w * 0.08, y: bottom - DECK * unit * s }, // the boy rides in the middle, the rabbit at the bow
+        seat: { x: cx + w * 0.01, y: bottom - DECK * unit * s }, // the boy rides in the middle, the rabbit at the bow
         manX: cx + w * 0.3,       // the ferryman poles from the stern
       });
       return ferry;

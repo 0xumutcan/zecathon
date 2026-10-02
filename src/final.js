@@ -146,7 +146,7 @@ export function createFinal({ section, room, quest, ferry, ch, speech, outfit, e
   function guide(floorY) {
     const rb = rabbit, prevX = rb.x;
     rb.state = "script"; rb.lift = 0; rb.scale = 1; rb.alpha = 1; rb.dive = null; rb.tilt = 0; rb.hole = null;
-    const bowX = ferry.leftX + ferry.w * 0.17, sitX = room.board.x - 70;
+    const bowX = ferry.leftX + ferry.w * 0.28, sitX = room.board.x - 70;
     const hop = seg(q, HOP[0] - 0.03, HOP[0] + 0.01);
     let x;
     if (hop < 1) {

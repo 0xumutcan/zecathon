@@ -106,7 +106,7 @@ export const shieldQuest = {
   title: "What does the chain see?",
   intro: "To cross the lake you pay the ferryman 0.50 ZEC. Every payment leaves a record on the chain, and anyone can read it. Here's that same payment, sent three ways.",
   reward: "A golden jacket is waiting in the chest.",
-  skip: { hint: "Know this already? Jump ahead." },
+  skip: false, // nothing to own or pay here: everyone can play it
   wide: true,
   body() {
     const tabs = Object.entries(VIEWS).map(([k, v]) =>

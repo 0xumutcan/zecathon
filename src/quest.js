@@ -134,7 +134,7 @@ export function createQuest(id, { video } = {}) {
         ${video ? `<button class="rewatch" type="button">▶ The rabbit's video</button>` : ""}
       </footer>
     </div>
-    ${skipHTML(def.skip)}
+    ${def.skip === false ? "" : skipHTML(def.skip)}
     </div>`;
   document.body.append(el);
 
@@ -153,7 +153,7 @@ export function createQuest(id, { video } = {}) {
     setTimeout(() => quest.hide(), how === "skipped" ? 0 : 1400); // let the success line be read
   };
   def.wire(el, () => finish("done"));
-  el.querySelector(".skip-side").addEventListener("click", () => finish("skipped"));
+  el.querySelector(".skip-side")?.addEventListener("click", () => finish("skipped"));
   return quest;
 }
 

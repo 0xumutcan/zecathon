@@ -283,3 +283,5 @@ main { position: relative; }
   .ferry-talk .qwrap > .skip-side { position: static; width: auto; grid-template-columns: auto auto auto; }
   .ferry-talk .qwrap > .skip-side small { grid-column: auto; }
 }
+/* while the rabbit's video is on, its own button moves on; the skip card would skip the video too */
+.qwrap:has(> .parchment.lesson-on) > .skip-side { display: none; }

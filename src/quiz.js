@@ -37,7 +37,7 @@ export const finalQuiz = {
   title: "Prove you know the way",
   intro: `Five questions, one from every floor. Get ${PASS} right and the light will change you.`,
   reward: "Pass to become a Zcash Master.",
-  skip: { label: "Skip the exam", hint: "Straight into the light." },
+  skip: false, // the exam needs nothing but what you just learned
   body() {
     return `
       <div class="exam">

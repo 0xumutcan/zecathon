@@ -18,23 +18,23 @@ import { createFinal } from "./final.js";
 // the dungeon, top to bottom: each floor has its room, its quest, the loot in its chest and the outfit it gives
 const FLOORS = [
   {
-    id: "floor1", quest: "wallet", item: 0, outfit: ["0_base", "1_cap"],
+    id: "floor1", quest: "wallet", item: 0, outfit: ["0_base", "1_cap"], video: "videos/floor1.mp4",
     lines: {
-      land: "Ouch.", board: "A quest board? For me?", afterQuest: "I have a wallet now. I think.",
+      land: "Ouch.", rabbit: "The golden rabbit! You came down too?", board: "A quest board? For me?", afterQuest: "I have a wallet now. I think.",
       chest: "Treasure?!", wear: "A cap! It even has a Z on it.", exit: "Wait, the floor is glowi—",
     },
   },
   {
-    id: "floor2", quest: "zec", item: 1, outfit: ["1_cap", "2_tee"],
+    id: "floor2", quest: "zec", item: 1, outfit: ["1_cap", "2_tee"], video: "videos/floor2.mp4",
     lines: {
-      land: "Oof. Again?", board: "Another quest. Of course.", afterQuest: "Coins in. Nobody watching.",
+      land: "Oof. Again?", rabbit: "Lead the way, rabbit.", board: "Another quest. Of course.", afterQuest: "Coins in. Nobody watching.",
       chest: "More treasure!", wear: "A matching tee. I'm getting the hang of this.", exit: "Here we go again!",
     },
   },
   {
-    id: "floor3", quest: "shield", item: 2, outfit: ["2_tee", "3_jacket"],
+    id: "floor3", quest: "shield", item: 2, outfit: ["2_tee", "3_jacket"], video: "videos/floor3.mp4",
     lines: {
-      land: "Why is it wet down here?", board: "A board about... boats?", afterQuest: "The shielded ones just... weren't there.",
+      land: "Why is it wet down here?", rabbit: "Rabbit, where are we now?", board: "A board about... boats?", afterQuest: "The shielded ones just... weren't there.",
       chest: "Treasure, by the water!", wear: "A jacket. I look like I know things now.",
       ferry: "Excuse me... are you the ferryman?", climb: "Wobbly!", sail: "Bye, watchers. You'll never know where I went.",
     },
@@ -62,6 +62,7 @@ const lenis = new Lenis({ lerp: 0.1 });
   ]);
   const ch = createCharacter({ look, walk, jump });
   const rabbit = createRabbit(rabbitSheet, rabbitDive);
+  const guide = createRabbit(rabbitSheet, rabbitDive); // the same rabbit, as the guide down in the dungeon
   const speech = createSpeech(document.getElementById("bubble"));
   const tunnel = createTunnel();
   const story = createStory({
@@ -97,8 +98,8 @@ const lenis = new Lenis({ lerp: 0.1 });
   const floorObjs = FLOORS.map((f, i) => {
     const floor = createFloor({
       section: document.getElementById(f.id),
-      room: rooms[i], quest: createQuest(f.quest), chest, items, itemIndex: f.item,
-      ch, speech, outfit: wardrobe(f.outfit), lines: f.lines,
+      room: rooms[i], quest: createQuest(f.quest, { video: f.video && { src: f.video, captions: f.video.replace(".mp4", ".vtt") } }), chest, items, itemIndex: f.item,
+      ch, speech, outfit: wardrobe(f.outfit), lines: f.lines, rabbit: guide,
       ferry: f.ferry && {
         boat: createFerry({ room: rooms[i], man: ferryman, boat: boatSheet, spot: f.ferry }),
         quest: createFerryQuest(),
@@ -111,7 +112,7 @@ const lenis = new Lenis({ lerp: 0.1 });
   const finalRoom = rooms[FLOORS.length];
   const finalScene = createFinal({
     section: document.getElementById("final"),
-    room: finalRoom, quest: createQuest("final"), ch, speech,
+    room: finalRoom, quest: createQuest("final"), ch, speech, rabbit: guide,
     ferry: createFerry({ room: finalRoom, man: ferryman, boat: boatSheet, spot: { x: 2100, water: 1390, arch: 3300 } }),
     outfit: wardrobe(["3_jacket", "5_master"]),
     ending: setupEnding(document.getElementById("ending")),

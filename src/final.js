@@ -20,7 +20,7 @@ const CHANGE = 0.63;          // ...a flash, and he is the Master
 const FALL = [0.66, 0.74];    // set back down
 const END = 0.8;              // the ending card
 
-export function createFinal({ section, room, quest, ferry, ch, speech, outfit, ending }) {
+export function createFinal({ section, room, quest, ferry, ch, speech, outfit, ending, rabbit }) {
   let q = 0, prevQ = 0;
   const crossed = (at) => prevQ < at && q >= at;
   const sparks = [];
@@ -104,12 +104,15 @@ export function createFinal({ section, room, quest, ferry, ch, speech, outfit, e
       if (crossed(FALL[1])) speech.say("Watch me. Oh wait, you can't.", now, 2400);
 
       ch.update(now, dt, floorY, null);
+      guide(floorY);
       for (const s of sparks) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 40 * dt; s.life -= dt * 0.9; }
       for (let i = sparks.length - 1; i >= 0; i--) if (sparks[i].life <= 0) sparks.splice(i, 1);
     },
 
     drawProps(now) {
+      if (rabbitInBoat) rabbit.draw(now, room.floorY); // before the boat, so the hull hides its feet
       ferry.draw(now);
+      if (!rabbitInBoat) rabbit.draw(now, room.floorY);
       // the beam brightens while he is in it; the orb brightens while the exam is open or passed
       const glow = Math.max(seg(q, TO_LIGHT[0], RISE[1]) * (1 - seg(q, FALL[0], FALL[1] + 0.1) * 0.6), 0);
       if (glow > 0) beam(glow, now);
@@ -136,6 +139,29 @@ export function createFinal({ section, room, quest, ferry, ch, speech, outfit, e
     c.closePath(); c.fill();
     c.restore();
     drawGlow(floor.x, floor.y - 10, 160, 0.3 * k);
+  }
+
+  // the rabbit rides in at the bow, hops ashore just ahead of him and waits by the oracle to watch
+  let rabbitInBoat = false;
+  function guide(floorY) {
+    const rb = rabbit, prevX = rb.x;
+    rb.state = "script"; rb.lift = 0; rb.scale = 1; rb.alpha = 1; rb.dive = null; rb.tilt = 0; rb.hole = null;
+    const bowX = ferry.leftX + ferry.w * 0.17, sitX = room.board.x - 70;
+    const hop = seg(q, HOP[0] - 0.03, HOP[0] + 0.01);
+    let x;
+    if (hop < 1) {
+      x = lerp(bowX, bowX - 50, ease(hop));
+      rb.lift = (floorY - ferry.deckY) * (1 - ease(hop)) + Math.sin(Math.PI * hop) * 30;
+      rb.scale = lerp(ferry.scale, 1, hop);
+      rb.alpha = ferry.alpha;
+    } else {
+      x = lerp(bowX - 50, sitX, ease(seg(q, HOP[1], TO_ORACLE[1] - 0.02)));
+    }
+    rabbitInBoat = hop < 0.5;
+    rb.moving = Math.abs(x - prevX) > 0.01 && rb.lift === 0;
+    if (rb.moving) { rb.dist += Math.abs(x - prevX); rb.facing = Math.sign(x - prevX); }
+    else rb.facing = rabbitInBoat ? -1 : Math.sign(ch.x - x) || 1;
+    rb.x = x;
   }
 
   function burst(x, y) {

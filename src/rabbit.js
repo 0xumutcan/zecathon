@@ -20,6 +20,7 @@ export function createRabbit(sheet, diveSheet) {
     lift: 0, scale: 1, alpha: 1, // extra lift/scale/alpha, set by the story
     dive: null,      // null, or the dive pose to show: 0 leap, 1 tip over, 2 straight down
     tilt: 0,         // rotation while diving
+    facing: 1,       // the sprites face right; -1 mirrors them
     hole: null,      // { depth, mask } while going into the burrow
     nextFidget: 0, fidgetUntil: 0,
 
@@ -79,9 +80,12 @@ export function createRabbit(sheet, diveSheet) {
         ctx.imageSmoothingEnabled = false;
         // dive poses pivot around their middle; standing poses stand on their feet
         if (rb.dive === null) {
-          ctx.drawImage(sh.img, r.sx, r.sy, r.w, r.h, Math.round(footX - (r.w * px) / 2), Math.round(footY - r.h * px), Math.round(r.w * px), Math.round(r.h * px));
+          ctx.translate(Math.round(footX), Math.round(footY));
+          if (rb.facing < 0) ctx.scale(-1, 1);
+          ctx.drawImage(sh.img, r.sx, r.sy, r.w, r.h, Math.round((-r.w * px) / 2), Math.round(-r.h * px), Math.round(r.w * px), Math.round(r.h * px));
         } else {
           ctx.translate(Math.round(footX), Math.round(footY - (r.h * px) / 2));
+          if (rb.facing < 0) ctx.scale(-1, 1);
           ctx.rotate(rb.tilt);
           ctx.drawImage(sh.img, r.sx, r.sy, r.w, r.h, Math.round((-r.w * px) / 2), Math.round((-r.h * px) / 2), Math.round(r.w * px), Math.round(r.h * px));
         }

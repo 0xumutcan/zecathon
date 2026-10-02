@@ -186,3 +186,22 @@ main { position: relative; }
 @media (prefers-reduced-motion: reduce) {
   #hint span { animation: none; }
 }
+
+/* ---- the rabbit's lesson: the first page of a quest panel ---- */
+.parchment:not(.lesson-on) > .lesson, .lesson-on .rewatch { display: none; }
+.parchment.lesson-on > :not(.eyebrow):not(h2):not(.lesson):not(footer) { display: none; }
+.lesson .by { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-weight: 500; }
+.rabbit-icon {
+  flex: none; width: 36px; height: 35px; image-rendering: pixelated;
+  background: url(/actors/rabbit_b.png) 0 0 / 144px 35px no-repeat;
+}
+.lesson .screen { background: #0d0b09; box-shadow: 0 0 0 calc(var(--px) * 2) var(--wood), 0 0 0 calc(var(--px) * 3) var(--gold); line-height: 0; }
+.lesson video { width: 100%; aspect-ratio: 16 / 9; background: #0d0b09; }
+.lesson-acts { display: flex; justify-content: flex-end; margin-top: 14px; }
+.lesson-acts button {
+  cursor: pointer; padding: 11px 18px; border: 0; font: 700 16px/1 "Pixelify Sans", monospace;
+  background: var(--gold); color: var(--ink-q); box-shadow: 0 4px 0 0 #a3740c;
+}
+.lesson-acts button.ghost { background: #f8efd8; box-shadow: inset 0 0 0 2px var(--wood); }
+.quest .rewatch { margin-left: auto; cursor: pointer; border: 0; background: none; color: #8a5a20; font: 600 13px/1 "Pixelify Sans", monospace; }
+.quest .rewatch:hover { color: var(--ink-q); }

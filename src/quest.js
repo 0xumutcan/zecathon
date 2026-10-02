@@ -108,7 +108,10 @@ QUESTS.zec = {
 QUESTS.shield = shieldQuest;
 QUESTS.final = finalQuiz;
 
-export function createQuest(id) {
+/**
+ * @param video  optional lesson the rabbit shows before the task: { src, captions? } (paths under public/)
+ */
+export function createQuest(id, { video } = {}) {
   const def = QUESTS[id];
   const el = document.createElement("div");
   el.className = "quest";
@@ -116,13 +119,15 @@ export function createQuest(id) {
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-label", def.title);
   el.innerHTML = `
-    <div class="parchment${def.wide ? " wide" : ""}">
+    <div class="parchment${def.wide ? " wide" : ""}${video ? " lesson-on" : ""}">
       <p class="eyebrow">${def.eyebrow}</p>
       <h2>${def.title}</h2>
+      ${video ? lessonHTML(video) : ""}
       <p class="intro">${def.intro}</p>
       ${def.body()}
       <footer>
         <span class="reward">${def.reward}</span>
+        ${video ? `<button class="rewatch" type="button">▶ The rabbit's video</button>` : ""}
         <button class="skip" type="button">Just looking? Skip for now</button>
       </footer>
     </div>`;
@@ -132,9 +137,10 @@ export function createQuest(id) {
     id,
     done: !!store.get(`done:${id}`),
     open: false,
-    show() { if (!quest.open) { quest.open = true; el.classList.add("show"); } },
-    hide() { if (quest.open) { quest.open = false; el.classList.remove("show"); } },
+    show() { if (!quest.open) { quest.open = true; el.classList.add("show"); lesson?.start(); } },
+    hide() { if (quest.open) { quest.open = false; el.classList.remove("show"); lesson?.stop(); } },
   };
+  const lesson = video ? wireLesson(el, id) : null;
   const finish = (how) => {
     quest.done = true;
     store.set(`done:${id}`, how);
@@ -144,4 +150,42 @@ export function createQuest(id) {
   def.wire(el, () => finish("done"));
   el.querySelector(".skip").addEventListener("click", () => finish("skipped"));
   return quest;
+}
+
+// --- the rabbit's lesson: a short video on the first page of the panel, before the task
+function lessonHTML({ src, captions }) {
+  return `
+      <div class="lesson">
+        <p class="by"><i class="rabbit-icon" aria-hidden="true"></i>Before you start, the rabbit has something to show you.</p>
+        <div class="screen">
+          <video playsinline muted controls preload="none">
+            <source src="${src}" type="video/mp4">
+            ${captions ? `<track kind="captions" src="${captions}" srclang="en" label="English" default>` : ""}
+          </video>
+        </div>
+        <div class="lesson-acts"><button type="button" class="go-on ghost">Skip the video</button></div>
+      </div>`;
+}
+
+function wireLesson(el, id) {
+  const parchment = el.querySelector(".parchment"), v = el.querySelector(".lesson video");
+  const go = el.querySelector(".go-on"), rewatch = el.querySelector(".rewatch");
+  const close = () => {
+    v.pause();
+    parchment.classList.remove("lesson-on");
+    store.set(`seen:${id}`, true);
+    parchment.scrollTop = 0;
+  };
+  const open = () => { parchment.classList.add("lesson-on"); parchment.scrollTop = 0; v.play().catch(() => {}); };
+  go.addEventListener("click", close);
+  rewatch.addEventListener("click", open);
+  v.addEventListener("ended", () => { go.textContent = "On to the quest →"; go.classList.remove("ghost"); });
+  // no video file (yet), or it can't play here: straight to the task
+  v.querySelector("source").addEventListener("error", () => { parchment.classList.remove("lesson-on"); rewatch.hidden = true; });
+  if (store.get(`seen:${id}`)) close();
+  return {
+    // muted so the browser allows autoplay; captions carry it and the controls can turn the sound on
+    start() { if (parchment.classList.contains("lesson-on")) { v.preload = "auto"; v.play().catch(() => {}); } },
+    stop() { v.pause(); },
+  };
 }

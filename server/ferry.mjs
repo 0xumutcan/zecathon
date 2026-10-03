@@ -4,7 +4,7 @@
 //   GET  /ferry/status/:code        -> { paid, changeSent, txid? }
 //
 // A visitor sends the fare (FARE zatoshis or more) to the ferryman's shielded address with their code in the memo.
-// A loop watches the wallet's received transfers; when one carries a session's code it sends CHANGE zatoshis back
+// A loop watches the wallet's received memos; when one carries a session's code it sends CHANGE zatoshis back
 // to the address the visitor gave, once per session. Sessions live in a JSON file so a restart forgets nothing.
 //
 // Keep only a little ZEC in this wallet: it is a hot wallet on a public server.
@@ -69,7 +69,8 @@ async function watch() {
   // unpaid sessions are watched for a day; a paid one stays until its change is out
   const open = Object.values(sessions).filter((s) => !s.changeSent && (s.paid || Date.now() - s.created < 86_400_000));
   if (!open.length) return;
-  const { value_transfers: transfers = [] } = json(await zingo("value_transfers"));
+  // "messages" lists the memo-bearing transfers as JSON ("value_transfers" prints plain text in zingo-cli v6)
+  const { value_transfers: transfers = [] } = json(await zingo("messages"));
   for (const s of open) {
     if (!s.paid) {
       const hit = transfers.find((t) => t.kind === "received" && t.value >= FARE

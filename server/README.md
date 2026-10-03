@@ -3,7 +3,7 @@
 A small API (`ferry.mjs`) next to a zingo-cli light wallet. The site's ferry scene talks to it through
 `VITE_FERRY_API` (set in Vercel). It needs no full node: zingo-cli syncs from a public lightwalletd (zec.rocks).
 
-The API calls `zingo-cli value_transfers` and `zingo-cli quicksend <address> <zatoshis> "<memo>"` non-interactively.
+The API calls `zingo-cli messages` (memo-bearing transfers as JSON; `value_transfers` prints plain text in v6) and `zingo-cli quicksend <address> <zatoshis> "<memo>"` non-interactively.
 
 Live box (2026-10): Ubuntu 24.04, 1 vCPU / 2 GB, SSH alias `zecosystem-ferry` (user `ubuntu`, key-only).
 It runs nothing else on purpose: it holds a hot wallet and faces the internet.

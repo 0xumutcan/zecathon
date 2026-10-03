@@ -38,7 +38,7 @@ const VIEWS = {
   shielding: {
     label: "Shielding", sub: "t1 → private", tone: "mid",
     rows: [
-      ["Pool", "transparent → Orchard"],
+      ["Pool", "transparent → Ironwood"],
       ["From", `<span class="leak">${YOU}</span>`],
       ["To", `${lock(short(hex(64)))} <small>your own private balance</small>`],
       ["Amount", `<span class="leak">0.50 ZEC</span>`],
@@ -54,7 +54,7 @@ const VIEWS = {
   shielded: {
     label: "Shielded", sub: "private → private", tone: "good",
     rows: [
-      ["Pool", "Orchard"],
+      ["Pool", "Ironwood"],
       ["From", lock(short(hex(64)))],
       ["To", lock(short(hex(64)))],
       ["Amount", "hidden"],

@@ -1,0 +1,19 @@
+[Unit]
+Description=Zecosystem ferryman wallet API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ferry
+WorkingDirectory=/home/ferry/ferry
+ExecStart=/usr/bin/node /home/ferry/zecathon/server/ferry.mjs
+Environment=FERRY_ADDRESS=u1REPLACE_WITH_THE_WALLETS_ADDRESS
+Environment=WALLET_DIR=/home/ferry/ferry/wallet
+Environment=SESSIONS_FILE=/home/ferry/ferry/sessions.json
+Environment=LIGHTWALLETD=https://zec.rocks:443
+Environment=ALLOWED_ORIGINS=https://zecosystem.info,https://www.zecosystem.info,https://zecathon.vercel.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

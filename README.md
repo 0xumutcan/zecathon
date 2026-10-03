@@ -61,3 +61,8 @@ With it (e.g. `VITE_FERRY_API=https://api.zecosystem.info`), it talks to the fer
 No analytics, no accounts, no cookies (fonts come from Google Fonts). Of everything you type, only the
 shielded address you give the ferryman leaves your browser: it goes to his server so your change can come
 back, and stays there with your session.
+
+## Made by
+
+- [@nefiten](https://x.com/nefiten)
+- [@0xumutcan](https://x.com/0xumutcan)

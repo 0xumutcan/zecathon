@@ -35,13 +35,25 @@ const save = () => { writeFileSync(`${DB}.tmp`, JSON.stringify(sessions, null, 2
 const newCode = () => "FERRY-" + randomBytes(4).toString("hex").toUpperCase();
 
 // --- zingo-cli, one call at a time (they share a wallet directory)
+// zingo-cli goes online only through the Nym mixnet, whose first hop sometimes fails to come up. When that
+// happens the command never reached the network, so it is safe to try again.
+const MIXNET_DOWN = /Failed to start the Nym mixnet proxy/;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 let queue = Promise.resolve();
 function zingo(...args) {
-  const run = () => new Promise((resolve, reject) => {
+  const once = () => new Promise((resolve, reject) => {
     execFile(ZINGO, [...ZINGO_PRE, "--data-dir", DATA_DIR, "--server", SERVER, "--waitsync", ...args],
       { timeout: 10 * 60_000, maxBuffer: 32 * 1024 * 1024 },
-      (err, stdout, stderr) => (err ? reject(new Error(`${args[0]}: ${stderr || err.message}`)) : resolve(stdout)));
+      (err, stdout, stderr) => (err ? reject(new Error(`${args[0]}: ${stderr || stdout || err.message}`)) : resolve(stdout)));
   });
+  const run = async () => {
+    for (let attempt = 1; ; attempt++) {
+      try { return await once(); } catch (e) {
+        if (!MIXNET_DOWN.test(e.message) || attempt >= 4) throw e;
+        await wait(5_000 * attempt);
+      }
+    }
+  };
   const p = queue.then(run, run);
   queue = p.catch(() => {});
   return p;
@@ -51,7 +63,8 @@ const json = (out) => JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}"
 
 // --- the watch loop: find paid sessions, send their change
 async function watch() {
-  const open = Object.values(sessions).filter((s) => !s.changeSent);
+  // unpaid sessions are watched for a day; a paid one stays until its change is out
+  const open = Object.values(sessions).filter((s) => !s.changeSent && (s.paid || Date.now() - s.created < 86_400_000));
   if (!open.length) return;
   const { value_transfers: transfers = [] } = json(await zingo("value_transfers"));
   for (const s of open) {
@@ -70,7 +83,10 @@ async function watch() {
         Object.assign(s, { changeSent: true, txid: out.txids?.[0] ?? null });
         console.log(`change for ${s.code}: ${s.txid}`);
       } catch (e) {
-        s.error = String(e.message).slice(0, 300); // stays "sending": look at it by hand before retrying
+        s.error = String(e.message).slice(0, 300);
+        // nothing left the wallet if the mixnet never came up: try again next round. Any other failure stays
+        // "sending" so a person looks at it before anything is retried (no double change).
+        if (MIXNET_DOWN.test(e.message)) s.sending = false;
         console.error(`change for ${s.code} failed`, e.message);
       }
       save();
@@ -115,8 +131,8 @@ http.createServer(async (req, res) => {
     try { address = String(JSON.parse(body).address ?? "").trim(); } catch { return send(res, 400, { error: "bad json" }, origin); }
     const check = checkAddress(address);
     if (!check.ok) return send(res, 400, { error: check.message }, origin);
-    // one open session per address: asking again gives the same code back
-    let s = Object.values(sessions).find((x) => x.address === address && !x.changeSent);
+    // one open session per address and day: asking again gives the same code back
+    let s = Object.values(sessions).find((x) => x.address === address && !x.changeSent && Date.now() - x.created < 86_400_000);
     if (!s) {
       s = { code: newCode(), address, created: Date.now(), paid: false, changeSent: false };
       sessions[s.code] = s; save();

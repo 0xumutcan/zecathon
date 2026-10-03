@@ -5,15 +5,22 @@ Wants=network-online.target
 
 [Service]
 User=ferry
-WorkingDirectory=/home/ferry/ferry
-ExecStart=/usr/bin/node /home/ferry/zecathon/server/ferry.mjs
+Group=ferry
+WorkingDirectory=/home/ferry/data
+ExecStart=/usr/bin/node /home/ferry/app/server/ferry.mjs
 Environment=FERRY_ADDRESS=u1REPLACE_WITH_THE_WALLETS_ADDRESS
-Environment=WALLET_DIR=/home/ferry/ferry/wallet
-Environment=SESSIONS_FILE=/home/ferry/ferry/sessions.json
+Environment=WALLET_DIR=/home/ferry/data/wallet
+Environment=SESSIONS_FILE=/home/ferry/data/sessions.json
 Environment=LIGHTWALLETD=https://zec.rocks:443
 Environment=ALLOWED_ORIGINS=https://zecosystem.info,https://www.zecosystem.info,https://zecathon.vercel.app
 Restart=on-failure
 RestartSec=5
+# it only needs its own folder
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ferry/data
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target

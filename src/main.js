@@ -212,7 +212,7 @@ function setupEnding(el) {
   // X's tweet link can only carry text: the image comes from the link's preview card (index.html meta tags),
   // or people copy the card below and paste it into their post
   const text = [
-    "I followed a golden rabbit down into the dungeon and came out a Zcash Master.",
+    "I followed a golden rabbit down into the dungeon and came out a Member of Zecosystem.",
     "",
     "Your turn: https://zecathon.vercel.app/?v=2", // ?v=2: X cached the bare link before it had a preview card
     "",

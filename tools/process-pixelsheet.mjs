@@ -1,6 +1,7 @@
 // Turns an AI-made low-res pixel-art pose sheet (poses in one row on green) into a clean sprite sheet:
 // keys out the green, splits the poses, finds the real pixel grid, and aligns every pose on one baseline.
-// usage: node process-pixelsheet.mjs <input.png> <name> [--out dir] [--colors n]
+// usage: node process-pixelsheet.mjs <input.png> <name> [--out dir] [--colors n] [--despill]
+//   --despill: also drop bright green-tinted pixels, where see-through glow was painted over the green
 import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import sharp from "sharp";
@@ -13,7 +14,9 @@ const colors = Number(flag("colors", 16));
 
 const { data, info } = await sharp(input).removeAlpha().raw().toBuffer({ resolveWithObject: true });
 const { width: W, height: H } = info;
-const isBg = (i) => data[i + 1] > 150 && data[i + 1] - data[i] > 60 && data[i + 1] - data[i + 2] > 60;
+const despill = argv.includes("--despill");
+const isBg = (i) => (data[i + 1] > 150 && data[i + 1] - data[i] > 60 && data[i + 1] - data[i + 2] > 60)
+  || (despill && data[i + 1] > 120 && data[i + 1] - data[i] > 12 && data[i + 1] - data[i + 2] > 40);
 
 // split poses on empty columns
 const colHas = new Array(W).fill(false);

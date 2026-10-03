@@ -96,7 +96,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
       ch.squash = 0.22 * Math.sin(Math.PI * seg(q, ...B.SQUASH));
 
       // --- walk: center -> quest board -> chest (-> the ferryman)
-      const boardX = room.board.x + 12, chestStandX = room.chestX - 74;
+      const boardX = room.board.x + 12, chestStandX = room.chestX - 112;
       let x = q < B.TO_CHEST[0] ? lerp(stage.W / 2, boardX, ease(seg(q, ...B.TO_BOARD))) : lerp(boardX, chestStandX, ease(seg(q, ...B.TO_CHEST)));
       let canWalk = q > B.DROP[1];
 
@@ -203,7 +203,7 @@ export function createFloor({ section, room, quest, chest, items, itemIndex, ch,
     rb.state = "script"; rb.lift = 0; rb.scale = 1; rb.alpha = 1; rb.dive = null; rb.tilt = 0; rb.hole = null;
     rabbitInBoat = false;
     const leg = (from, to, a, b) => lerp(from, to, ease(seg(q, a, b)));
-    const waitX = W / 2 + 84, boardX = room.board.x - 64, chestX = room.chestX + 66;
+    const waitX = W / 2 + 84, boardX = room.board.x - 64, chestX = room.chestX + 120;
     let x = leg(waitX, boardX, B.TO_BOARD[0] - 0.02, B.TO_BOARD[1] - 0.03);
     if (q >= B.TO_CHEST[0] - 0.01) x = leg(boardX, chestX, B.TO_CHEST[0] - 0.01, B.TO_CHEST[1] - 0.02);
 

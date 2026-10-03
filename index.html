@@ -64,6 +64,21 @@
   <section id="final" class="chapter" aria-label="The other shore"></section>
 </main>
 
-<script type="module" src="/src/main.js"></script>
+<!-- shown instead of the story on phones and small tablets (src/entry.js) -->
+<section id="gate" hidden aria-label="Best on a bigger screen">
+  <div class="gate-card">
+    <p class="eyebrow">Zecosystem</p>
+    <h1>Best on a bigger screen</h1>
+    <p>This trip down the rabbit hole is built for a computer: a cursor to follow, rooms to explore, and quests that want your wallet close by.</p>
+    <p class="where">Open <b>zecosystem.info</b> on a desktop or laptop and follow the golden rabbit.</p>
+    <button type="button" class="gate-link"><span>Send the link to my computer</span><i aria-hidden="true"></i></button>
+  </div>
+  <div class="gate-stage" aria-hidden="true">
+    <i class="gate-rabbit"></i>
+    <img class="gate-master" src="mobile-master.png" alt="" width="200" height="260">
+  </div>
+</section>
+
+<script type="module" src="/src/entry.js"></script>
 </body>
 </html>

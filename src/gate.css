@@ -1,0 +1,77 @@
+/* ---- the small-screen gate: the far shore's light, the Member of Zecosystem and the rabbit ---- */
+#gate { display: none; }
+html.gated, html.gated body { height: 100%; overflow: hidden; background: #0f0d10; }
+html.gated body > :not(#gate) { display: none !important; }
+html.gated #gate {
+  --gold: #f4b728; --px: 3px;
+  position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; justify-items: center;
+  padding: max(20px, env(safe-area-inset-top)) 16px 0; overflow: hidden;
+  /* the far-shore room, its floor along the bottom (the floor line sits 6.5% above the image's bottom edge) */
+  background: #0f0d10 url(/env/final.webp) 52% 100% / cover no-repeat;
+  font: 16px/1.5 Inter, system-ui, sans-serif; color: #f2ead8;
+}
+/* darken the top so the card reads, and let the skylight beam breathe */
+#gate::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(#0f0d10ee 0%, #0f0d1099 38%, transparent 62%);
+}
+#gate::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; width: 70vw; height: 70vh; translate: -50% 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 85%, rgba(255, 210, 110, .35), transparent 65%);
+  mix-blend-mode: screen; animation: gate-glow 3.2s ease-in-out infinite;
+}
+@keyframes gate-glow { 50% { opacity: .55; } }
+
+.gate-card {
+  position: relative; z-index: 1; width: min(420px, 100%);
+  padding: calc(var(--px) * 6) calc(var(--px) * 7);
+  background: rgba(21, 18, 15, .92);
+  box-shadow:
+    0 calc(var(--px) * -1) 0 0 var(--gold), 0 var(--px) 0 0 var(--gold),
+    calc(var(--px) * -1) 0 0 0 var(--gold), var(--px) 0 0 0 var(--gold),
+    0 calc(var(--px) * 3) 0 0 rgba(0, 0, 0, .45);
+  text-align: center;
+}
+.gate-card .eyebrow { margin: 0 0 8px; font: 600 12px/1 "Pixelify Sans", monospace; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+.gate-card h1 { margin: 0 0 10px; font: 700 clamp(26px, 8vw, 34px)/1.05 "Pixelify Sans", monospace; color: var(--gold); }
+.gate-card p { margin: 0 0 10px; font-size: 15px; }
+.gate-card .where { font-size: 14px; color: #c9bfa9; }
+.gate-card .where b { color: #fff; font-weight: 600; }
+.gate-link {
+  margin-top: 6px; cursor: pointer; border: 0; padding: 12px 16px; display: inline-flex; align-items: center; gap: 10px;
+  font: 700 16px/1 "Pixelify Sans", monospace; color: #2b1b10; background: var(--gold);
+  box-shadow: 0 4px 0 0 #a3740c;
+}
+.gate-link:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
+/* a pixel arrow pointing off to a bigger screen */
+.gate-link i { width: 14px; height: 12px; background: #2b1b10; clip-path: polygon(0 35%, 55% 35%, 55% 0, 100% 50%, 55% 100%, 55% 65%, 0 65%); }
+
+/* the pair standing in the light, feet on the room's floor line */
+.gate-stage {
+  position: absolute; z-index: 1; left: 50%; translate: -50% 0;
+  bottom: max(6.5vh, 3.63vw); line-height: 0; /* centered on the hero; the rabbit sits off his left side */
+}
+.gate-master {
+  height: clamp(190px, 40vh, 460px); width: auto; image-rendering: pixelated;
+  margin-bottom: calc(clamp(190px, 40vh, 460px) * -4 / 260); /* the frame keeps the feet 4px above its edge */
+  filter: drop-shadow(0 0 18px rgba(255, 210, 110, .45));
+}
+.gate-rabbit {
+  width: calc(clamp(190px, 40vh, 460px) * .3); aspect-ratio: 60 / 58; image-rendering: pixelated;
+  background: url(/actors/rabbit_b.png) 0 0 / 400% 100% no-repeat;
+  animation: gate-fidget 2.6s steps(1) infinite;
+  position: absolute; bottom: 0; right: calc(100% - clamp(190px, 40vh, 460px) * .16); /* the hero's frame has empty sides */
+}
+/* sits, checks the pocket watch now and then */
+@keyframes gate-fidget { 0%, 72% { background-position: 0 0; } 73%, 88% { background-position: 100% 0; } 89%, 100% { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { #gate::after, .gate-rabbit { animation: none; } }
+/* phones held sideways: too short to stack, so the card sits left and the pair stands on the right */
+@media (max-height: 540px) and (orientation: landscape) {
+  html.gated #gate { justify-items: start; padding-left: max(16px, env(safe-area-inset-left)); }
+  .gate-card { width: min(400px, 54vw); padding: calc(var(--px) * 4) calc(var(--px) * 5); }
+  .gate-card h1 { font-size: 24px; margin-bottom: 6px; }
+  .gate-card p { font-size: 13px; margin-bottom: 6px; }
+  .gate-stage { left: auto; right: max(4vw, env(safe-area-inset-right)); translate: none; }
+  .gate-master { height: clamp(150px, 62vh, 300px); margin-bottom: calc(clamp(150px, 62vh, 300px) * -4 / 260); }
+  .gate-rabbit { width: calc(clamp(150px, 62vh, 300px) * .3); right: calc(100% - clamp(150px, 62vh, 300px) * .16); }
+}

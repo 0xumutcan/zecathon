@@ -237,7 +237,7 @@ function setupEnding(el) {
       await navigator.clipboard.write([new ClipboardItem({ "image/png": png() })]);
       copy.textContent = "Copied! Paste it in your post";
     } catch {
-      const a = Object.assign(document.createElement("a"), { href: img.src, download: "zcash-master.jpg" });
+      const a = Object.assign(document.createElement("a"), { href: img.src, download: "member-of-zecosystem.jpg" });
       a.click();
       copy.textContent = "Saved. Attach it to your post";
     }

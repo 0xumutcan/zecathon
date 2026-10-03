@@ -13,7 +13,7 @@ import { skipHTML } from "./skip.js";
 // Without it (local dev), the payment card says so and never shows an address to pay.
 
 const API = import.meta.env.VITE_FERRY_API;
-const FARE = "0.002", CHANGE = "0.001";
+const FARE = "0.0002", CHANGE = "0.0001"; // the server sends the same amounts with each session
 const BLOCK_SECONDS = 75;
 
 // ZIP-321 payment request: wallets that scan it fill in address, amount and memo for you

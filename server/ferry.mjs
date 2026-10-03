@@ -23,7 +23,9 @@ const SERVER = env("LIGHTWALLETD", "https://zec.rocks:443");
 const PAY_TO = env("FERRY_ADDRESS", "");           // the wallet's unified address (zingo-cli addresses)
 const ORIGINS = env("ALLOWED_ORIGINS", "https://zecosystem.info").split(",").map((s) => s.trim());
 const DB = env("SESSIONS_FILE", "./sessions.json");
-const FARE = 200_000, CHANGE = 100_000;            // zatoshis: 0.002 ZEC in, 0.001 ZEC back
+// zatoshis: 0.0002 ZEC in, 0.0001 ZEC back. Sending the change costs the standard 0.0001 fee (ZIP 317),
+// so each crossing breaks even and the funded balance is only a cushion.
+const FARE = 20_000, CHANGE = 10_000;
 const POLL_MS = Number(env("POLL_MS", 45_000));
 const MEMO_BACK = "Change from the ferryman. Safe travels, and keep it shielded.";
 
@@ -32,6 +34,7 @@ if (!PAY_TO) { console.error("FERRY_ADDRESS is not set"); process.exit(1); }
 // --- sessions, written atomically
 let sessions = existsSync(DB) ? JSON.parse(readFileSync(DB, "utf8")) : {};
 const save = () => { writeFileSync(`${DB}.tmp`, JSON.stringify(sessions, null, 2)); renameSync(`${DB}.tmp`, DB); };
+const zec = (zats) => String(zats / 1e8); // 20000 -> "0.0002"
 const newCode = () => "FERRY-" + randomBytes(4).toString("hex").toUpperCase();
 
 // --- zingo-cli, one call at a time (they share a wallet directory)
@@ -137,7 +140,7 @@ http.createServer(async (req, res) => {
       s = { code: newCode(), address, created: Date.now(), paid: false, changeSent: false };
       sessions[s.code] = s; save();
     }
-    return send(res, 200, { code: s.code, payTo: PAY_TO, amount: (FARE / 1e8).toFixed(3), change: (CHANGE / 1e8).toFixed(3) }, origin);
+    return send(res, 200, { code: s.code, payTo: PAY_TO, amount: zec(FARE), change: zec(CHANGE) }, origin);
   }
   const m = url.pathname.match(/^\/ferry\/status\/(FERRY-[0-9A-F]{8})$/);
   if (req.method === "GET" && m) {

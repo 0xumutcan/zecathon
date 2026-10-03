@@ -136,3 +136,19 @@
   .radar .grid.on::before { animation: none; opacity: 0; }
   .radar .grid.on .pinged:not(.shot)::after { animation: none; opacity: .8; }
 }
+
+/* ---- phase 2: the shielded payments are shown, and they hold ---- */
+.hunt .phase2 {
+  margin: 0 0 12px; padding: 10px 14px; font-size: 14px;
+  background: rgba(244, 183, 40, .22); box-shadow: inset 0 0 0 2px rgba(163, 116, 12, .55);
+  animation: logIn .3s steps(3);
+}
+.hunt .phase2[hidden] { display: none; }
+.radar .grid.phase-shielded .reveal { cursor: crosshair; animation: target 1.2s steps(3) infinite; }
+.radar .grid.phase-shielded .reveal:hover { background: rgba(244, 183, 40, .18); }
+/* the sweep keeps turning: the shielded ones never blip, even now */
+@keyframes target { 50% { box-shadow: inset 0 0 0 2px var(--gold), 0 0 12px rgba(244, 183, 40, .5); } }
+/* a hit makes the whole ship flash and hold */
+.radar .grid .ripple { animation: ripple .6s steps(4); }
+.radar .grid.phase-shielded .reveal.ripple { animation: ripple .6s steps(4), target 1.2s steps(3) .6s infinite; }
+@keyframes ripple { 0% { background: rgba(255, 240, 190, .85); } 100% { background: transparent; } }

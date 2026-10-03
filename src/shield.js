@@ -73,6 +73,7 @@ const VIEWS = {
 const N = 8;                    // grid is N x N
 const FLEET = [3, 2, 2];        // ship lengths, once transparent and once shielded
 const SWEEP = 3;                // radar sweep period, seconds
+const SHIELD_SHOTS = 3;         // hits on shielded payments before the round ends
 
 function placeFleet(r) {
   const taken = new Set(), ships = [];
@@ -126,6 +127,7 @@ export const shieldQuest = {
       <div class="page hunt" hidden>
         <p class="cap">Your turn to watch</p>
         <p class="intro">Someone is always watching the chain. Today it's you. Sink every transparent payment on the radar. They give themselves away; the shielded ones are out there too.</p>
+        <p class="phase2" hidden role="status"><b>Three more payments happened on this chain. They're shielded.</b> We'll even show you where they are. Go on, fire at them.</p>
         <div class="sea">
           <div class="radar">
             <div class="cols" aria-hidden="true">${"ABCDEFGH".split("").map((c) => `<span>${c}</span>`).join("")}</div>
@@ -163,7 +165,9 @@ export const shieldQuest = {
     // --- hunt
     const grid = panel.querySelector(".grid"), log = panel.querySelector(".log");
     const end = panel.querySelector(".end");
-    let ships, over;
+    // phase "transparent": sink the blips. phase "shielded": the shielded ones are shown, and every shot bounces.
+    let ships, phase, shieldHits;
+    const phase2 = panel.querySelector(".phase2");
     const shipAt = (x, y) => ships.find((s) => s.cells.some(([cx, cy]) => cx === x && cy === y));
     const note = (cls, html) => { log.insertAdjacentHTML("afterbegin", `<li class="${cls}">${html}</li>`); };
 
@@ -171,9 +175,11 @@ export const shieldQuest = {
       const r = rng((Math.random() * 2 ** 32) >>> 0);
       ships = placeFleet(r);
       ships.forEach((s) => { if (s.kind === "transparent") s.leak = exposure(r); });
-      over = false;
+      phase = "transparent"; shieldHits = 0;
       log.innerHTML = "";
       end.hidden = true;
+      phase2.hidden = true;
+      grid.classList.remove("over", "phase-shielded");
       panel.querySelector(".n-sunk").textContent = "0";
       panel.querySelector(".n-bounced").textContent = "0";
       grid.innerHTML = "";
@@ -199,15 +205,29 @@ export const shieldQuest = {
 
     grid.addEventListener("click", (e) => {
       const cell = e.target.closest("button");
-      if (!cell || over || cell.classList.contains("shot")) return;
+      if (!cell || phase === "over") return;
       const x = +cell.dataset.x, y = +cell.dataset.y, ship = shipAt(x, y), at = `${"ABCDEFGH"[x]}${y + 1}`;
+      // once they're shown, shielded payments can be hit again and again: it never does anything
+      const again = phase === "shielded" && ship?.kind === "shielded";
+      if (cell.classList.contains("shot") && !again) return;
       cell.classList.add("shot");
       if (!ship) { cell.classList.add("miss"); return; }
       if (ship.kind === "shielded") {
         cell.classList.add("shield");
+        // the whole ship shimmers and holds: found, hit, and still nothing to read
+        ship.cells.forEach(([sx, sy]) => {
+          const c = grid.children[sy * N + sx];
+          c.classList.remove("ripple"); void c.offsetWidth; c.classList.add("ripple");
+        });
         const n = panel.querySelector(".n-bounced");
         n.textContent = String(+n.textContent + 1);
-        note("shield", `<b>${at}</b> Bounced. Something shielded is here: <span class="lk">${short(hex(64, Math.random))}</span>. That's all you get.`);
+        if (phase === "shielded") {
+          shieldHits++;
+          note("shield", `<b>${at}</b> Direct hit. Sender: hidden. Receiver: hidden. Amount: hidden. <span class="lk">${short(hex(64, Math.random))}</span> is all the chain shows.`);
+          if (shieldHits >= SHIELD_SHOTS) setTimeout(finish, 700);
+        } else {
+          note("shield", `<b>${at}</b> Bounced. Something shielded is here: <span class="lk">${short(hex(64, Math.random))}</span>. That's all you get.`);
+        }
         return;
       }
       cell.classList.add("hit");
@@ -218,16 +238,29 @@ export const shieldQuest = {
       note("sunk", `<b>Exposed</b> <span class="leak">${short(from)}</span> paid <span class="leak">${short(to)}</span> <span class="leak">${amount} ZEC</span>. Sender still holds <span class="leak">${balance} ZEC</span>.`);
       const sunk = ships.filter((s) => s.kind === "transparent" && s.hits === s.cells.length);
       panel.querySelector(".n-sunk").textContent = String(sunk.length);
-      if (sunk.length === FLEET.length) finish(sunk);
+      if (sunk.length === FLEET.length) shieldedPhase();
     });
 
-    function finish(sunk) {
-      over = true;
-      grid.classList.add("over");
-      // show where the shielded payments were the whole time
+    // every transparent payment is exposed: now show where the shielded ones are, and let them try
+    function shieldedPhase() {
+      phase = "shielded";
+      grid.classList.add("phase-shielded");
       ships.filter((s) => s.kind === "shielded").forEach((s) => s.cells.forEach(([x, y]) => grid.children[y * N + x].classList.add("reveal")));
+      phase2.hidden = false;
+      const n = panel.querySelector(".n-bounced");
+      n.textContent = "0"; // this round counts its own shots
+      n.nextElementSibling.textContent = `hits on shielded (fire ${SHIELD_SHOTS})`;
+      note("sys", `All transparent payments exposed. ${FLEET.length} shielded payments located (gold). Fire at will.`);
+      phase2.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    function finish() {
+      phase = "over";
+      grid.classList.add("over");
+      const sunk = ships.filter((s) => s.kind === "transparent");
       const total = sunk.reduce((t, s) => t + Number(s.leak.amount), 0).toFixed(2);
-      end.querySelector("p").innerHTML = `You exposed <b>${sunk.length} transparent payments</b>: ${sunk.length * 2} addresses, ${total} ZEC in payments, and what the senders still hold. The <b>${FLEET.length} shielded payments</b> (gold) sat on the same radar the whole time. You read <b>nothing</b> from them.`;
+      phase2.hidden = true;
+      end.querySelector("p").innerHTML = `From the <b>transparent payments</b> you read ${sunk.length * 2} addresses, ${total} ZEC in payments, and what the senders still hold. The <b>shielded ones</b>? You knew exactly where they were and hit them ${shieldHits} times. What you learned: <b>nothing</b>. Not who, not how much, and you couldn't touch them.`;
       end.hidden = false;
       end.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }

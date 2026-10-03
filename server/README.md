@@ -26,6 +26,15 @@ nice -n 10 cargo build --release --package zingo-cli -j 1
 sudo cp target/release/zingo-cli /usr/local/bin/
 ```
 
+zingo-cli v6 only goes online through the Nym mixnet, so it also needs `nym-proxy` on the PATH (~25 min):
+
+```bash
+CARGO_BUILD_JOBS=1 nice -n 10 cargo run -q --manifest-path tools/workbench/Cargo.toml --bin bundle-nym-proxy -- --release
+sudo cp target/release/nym-proxy /usr/local/bin/
+```
+
+The mixnet's first hop sometimes fails to come up ("no proven exit"); the API retries those calls.
+
 ## 3. App files and user
 
 The repo is private, so the three files are copied over:

@@ -175,7 +175,6 @@ main { position: relative; }
 .result.good { color: #2f6b2a; font-weight: 600; }
 .result.bad { color: #9a2a1a; }
 .parchment footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; padding-top: 12px; border-top: 2px dashed rgba(58, 36, 20, .35); font-size: 13px; }
-.reward { font-weight: 600; color: #8a5a20; }
 @media (max-width: 560px) {
   .wallets { grid-template-columns: 1fr; }
   .parchment footer { flex-direction: column; align-items: flex-start; }
@@ -315,3 +314,4 @@ main { position: relative; }
 .lesson .play:active { translate: 0 2px; box-shadow: 0 2px 0 0 #a3740c; }
 @keyframes playpulse { 50% { box-shadow: 0 5px 0 0 #a3740c, 0 0 0 calc(var(--px) * 4) rgba(244, 183, 40, .35), 0 10px 30px rgba(0, 0, 0, .55); } }
 @media (prefers-reduced-motion: reduce) { .lesson .play { animation: none; } }
+.parchment.lesson-on > footer { display: none; } /* only the rewatch link lives there */

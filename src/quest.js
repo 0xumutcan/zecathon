@@ -11,7 +11,6 @@ const QUESTS = {
     eyebrow: "Quest I · The Wallet Vault",
     title: "Get a pocket nobody can peek into",
     intro: "Down here, money needs a wallet. A shielded one keeps your balance and payments private by default. Install one, then show it to the board.",
-    reward: "A golden cap is waiting in the chest.",
     skip: { hint: "No wallet handy? Jump ahead." },
     body(q) {
       return `
@@ -55,7 +54,6 @@ QUESTS.zec = {
   eyebrow: "Quest II · The Old Mint",
   title: "Put some ZEC in your pocket",
   intro: "A wallet with nothing in it is just a nice idea. Get a little ZEC: a dollar or two is plenty for the floors below.",
-  reward: "A golden tee is waiting in the chest.",
   skip: { hint: "No ZEC on you? Jump ahead." },
   body() {
     return `
@@ -129,10 +127,7 @@ export function createQuest(id, { video } = {}) {
       ${video ? lessonHTML(video) : ""}
       <p class="intro">${def.intro}</p>
       ${def.body()}
-      <footer>
-        <span class="reward">${def.reward}</span>
-        ${video ? `<button class="rewatch" type="button">▶ The rabbit's video</button>` : ""}
-      </footer>
+      ${video ? `<footer><button class="rewatch" type="button">▶ The rabbit's video</button></footer>` : ""}
     </div>
     ${def.skip === false ? "" : skipHTML(def.skip)}
     </div>`;

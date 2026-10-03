@@ -36,7 +36,6 @@ export const finalQuiz = {
   eyebrow: "The Oracle",
   title: "Prove you know the way",
   intro: `Five questions, one from every floor. Get ${PASS} right and the light will change you.`,
-  reward: "Pass to become a Member of Zecosystem.",
   skip: false, // the exam needs nothing but what you just learned
   body() {
     return `

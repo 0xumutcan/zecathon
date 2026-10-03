@@ -214,7 +214,7 @@ function setupEnding(el) {
   const text = [
     "I followed a golden rabbit down into the dungeon and came out a Member of Zecosystem.",
     "",
-    "Your turn: https://zecathon.vercel.app/?v=2", // ?v=2: X cached the bare link before it had a preview card
+    "Your turn: https://zecosystem.info/",
     "",
     `${italic("Built for the")} @zksnarks_ ${italic("ZECATHON Wildcard track.")}`, // the mention stays plain so it tags
   ].join("\n");
